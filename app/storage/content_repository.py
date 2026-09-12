@@ -38,26 +38,6 @@ def create_content(
 
 
 
-def get_content(content_id: str):
-
-    with connection_scope() as connection:
-
-        result = connection.execute(
-            """
-            SELECT *
-            FROM contents
-            WHERE id = ?
-            """,
-            (content_id,)
-        ).fetchone()
-
-    if not result:
-        return None
-
-    return dict(result)
-
-
-
 def get_teacher_contents(teacher_id: str):
 
     with connection_scope() as connection:
@@ -76,3 +56,19 @@ def get_teacher_contents(teacher_id: str):
         dict(row)
         for row in results
     ]
+
+
+def get_content(content_id):
+
+    with connection_scope() as connection:
+
+        row = connection.execute(
+            """
+            SELECT *
+            FROM contents
+            WHERE id = ?
+            """,
+            (content_id,)
+        ).fetchone()
+
+    return dict(row) if row else None

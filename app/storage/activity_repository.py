@@ -180,9 +180,6 @@ def update_review_status(
         )
 
 
-
-
-
 def _convert_activity(row):
 
     activity = dict(row)
@@ -204,3 +201,94 @@ def _convert_activity(row):
     )
 
     return activity
+
+def get_content_activities(content_id):
+
+    with connection_scope() as connection:
+
+        rows = connection.execute(
+            """
+            SELECT a.*
+            FROM activities a
+            INNER JOIN topics t
+                ON a.topic_id = t.id
+            WHERE t.content_id = ?
+            """,
+            (content_id,)
+        ).fetchall()
+
+    return [
+        dict(row)
+        for row in rows
+    ]
+
+def update_activity_review(
+
+    activity_id: str,
+
+    review_status: str,
+
+    teacher_modified: bool = False,
+
+    question=None,
+
+    options=None,
+
+    correct_answer=None,
+
+    explanation=None,
+
+    hints=None
+
+):
+
+    with connection_scope() as connection:
+
+        connection.execute(
+
+            """
+            UPDATE activities
+
+            SET
+
+                review_status = ?,
+
+                teacher_modified = ?,
+
+                question = COALESCE(?, question),
+
+                options = COALESCE(?, options),
+
+                correct_answer = COALESCE(?, correct_answer),
+
+                explanation = COALESCE(?, explanation),
+
+                hints = COALESCE(?, hints)
+
+            WHERE id = ?
+
+            """,
+
+            (
+
+                review_status,
+
+                1 if teacher_modified else 0,
+
+                question,
+
+                json.dumps(options)
+                if options else None,
+
+                correct_answer,
+
+                explanation,
+
+                json.dumps(hints)
+                if hints else None,
+
+                activity_id
+
+            )
+
+        )

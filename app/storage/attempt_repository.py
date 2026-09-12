@@ -3,6 +3,8 @@ from app.database.database import connection_scope
 from datetime import datetime
 import uuid
 
+from app.storage.activity_repository import _convert_activity
+
 
 
 def create_attempt(
@@ -126,3 +128,34 @@ def get_topic_performance(
         "accuracy":
             (result["correct"] / result["total"]) * 100
     }
+
+def get_pending_activities_by_content(
+    content_id: str
+):
+
+    with connection_scope() as connection:
+
+        rows = connection.execute(
+            """
+            SELECT a.*
+
+            FROM activities a
+
+            INNER JOIN topics t
+                ON a.topic_id = t.id
+
+            WHERE t.content_id = ?
+            AND a.review_status = 'pending'
+
+            """,
+            (
+                content_id,
+            )
+
+        ).fetchall()
+
+
+    return [
+        _convert_activity(row)
+        for row in rows
+    ]

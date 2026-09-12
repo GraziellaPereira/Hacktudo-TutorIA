@@ -4,6 +4,7 @@ import time
 from dotenv import load_dotenv
 from google import genai
 from google.genai import errors, types
+from pydantic import ValidationError
 from app.model.content import ContentAnalysis
 
 load_dotenv()
@@ -101,6 +102,10 @@ Não escreva explicações fora do JSON.
 
 Identifique todos os tópicos relevantes presentes no conteúdo.
 
+Retorne no mínimo 3 tópicos distintos, desde que existam informações
+suficientes no conteúdo para descrevê-los. Não agrupe conceitos diferentes
+em um único tópico apenas para reduzir a quantidade.
+
 Não agrupe assuntos diferentes em um único tópico.
 
 Cada conceito principal deve ser representado como um tópico separado quando possuir objetivos de aprendizagem próprios.
@@ -141,25 +146,41 @@ Conteúdo:
 """
 
 
+    ultimo_erro = None
+
     for attempt in range(3):
+        instrucoes = prompt
+        if ultimo_erro is not None:
+            instrucoes += """
+
+ATENÇÃO: a análise anterior foi rejeitada porque retornou menos de 3 tópicos
+ou tópicos inválidos. Gere novamente no mínimo 3 tópicos distintos, usando
+somente informações presentes no conteúdo.
+"""
+
         try:
             response = client.models.generate_content(
                 model="gemini-3.5-flash-lite",
-                contents=prompt,
+                contents=instrucoes,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
                     response_schema=ContentAnalysis,
                 ),
             )
-            break
+            if not response.text:
+                raise RuntimeError("A API não retornou uma análise.")
+
+            return ContentAnalysis.model_validate_json(response.text)
         except errors.ServerError:
             if attempt == 2:
                 raise
             time.sleep(2 ** attempt)
+        except ValidationError as error:
+            ultimo_erro = error
+            if attempt == 2:
+                raise RuntimeError(
+                    "A API retornou uma análise inválida após 3 tentativas."
+                ) from error
+            time.sleep(2 ** attempt)
 
-    if not response.text:
-        raise RuntimeError("A API não retornou uma análise.")
-
-    return ContentAnalysis.model_validate_json(
-        response.text
-    )
+    raise RuntimeError("Não foi possível analisar o conteúdo.")

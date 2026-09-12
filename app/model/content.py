@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Topic(BaseModel):
@@ -14,4 +14,4 @@ class Topic(BaseModel):
 class ContentAnalysis(BaseModel):
     title: str
     summary: str
-    topics: list[Topic]
+    topics: list[Topic] = Field(min_length=3)

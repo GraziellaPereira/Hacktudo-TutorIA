@@ -89,13 +89,11 @@ def get_topic(topic_id: str):
     return topic
 
 
-
-
-def get_content_topics(content_id: str):
+def get_content_topics(content_id):
 
     with connection_scope() as connection:
 
-        results = connection.execute(
+        rows = connection.execute(
             """
             SELECT *
             FROM topics
@@ -104,26 +102,16 @@ def get_content_topics(content_id: str):
             (content_id,)
         ).fetchall()
 
-
     topics = []
-
-    for row in results:
-
+    for row in rows:
         topic = dict(row)
-
         topic["learning_objectives"] = json.loads(
             topic["learning_objectives"]
         )
-
-        topic["concepts"] = json.loads(
-            topic["concepts"]
-        )
-
+        topic["concepts"] = json.loads(topic["concepts"])
         topic["practical_applications"] = json.loads(
             topic["practical_applications"]
         )
-
         topics.append(topic)
-
 
     return topics
