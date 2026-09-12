@@ -27,12 +27,31 @@ CREATE TABLE IF NOT EXISTS students (
 );
 
 CREATE TABLE IF NOT EXISTS contents (
+
     id TEXT PRIMARY KEY,
+
     teacher_id TEXT NOT NULL,
+
     title TEXT NOT NULL,
+
     original_text TEXT NOT NULL,
+
+    subject TEXT NOT NULL,
+
+    education_level TEXT NOT NULL,
+
+    grade_or_period TEXT NOT NULL,
+
+    target_audience TEXT NOT NULL,
+
+    learning_goal TEXT NOT NULL,
+
+    assessment_focus TEXT NOT NULL,
+
     created_at TEXT NOT NULL,
+
     FOREIGN KEY (teacher_id) REFERENCES teachers(id)
+
 );
 
 CREATE TABLE IF NOT EXISTS topics (
@@ -66,6 +85,7 @@ CREATE TABLE IF NOT EXISTS activities (
     validation_score INTEGER,
     validation_warnings TEXT NOT NULL,
     teacher_modified INTEGER NOT NULL DEFAULT 0,
+    regenerated_from TEXT,
     FOREIGN KEY (topic_id) REFERENCES topics(id)
 );
 
@@ -101,6 +121,20 @@ CREATE TABLE IF NOT EXISTS learning_materials (
 """
 
 
+CONTENT_CONTEXT_COLUMNS = {
+    "subject": "TEXT NOT NULL DEFAULT ''",
+    "education_level": "TEXT NOT NULL DEFAULT ''",
+    "grade_or_period": "TEXT NOT NULL DEFAULT ''",
+    "target_audience": "TEXT NOT NULL DEFAULT ''",
+    "learning_goal": "TEXT NOT NULL DEFAULT ''",
+    "assessment_focus": "TEXT NOT NULL DEFAULT '[]'",
+}
+
+ACTIVITY_COLUMNS = {
+    "regenerated_from": "TEXT",
+}
+
+
 def get_connection() -> sqlite3.Connection:
     DATABASE_PATH.parent.mkdir(parents=True, exist_ok=True)
     connection = sqlite3.connect(DATABASE_PATH)
@@ -112,6 +146,27 @@ def get_connection() -> sqlite3.Connection:
 def initialize_database() -> None:
     with get_connection() as connection:
         connection.executescript(SCHEMA)
+        existing_columns = {
+            row[1]
+            for row in connection.execute("PRAGMA table_info(contents)")
+        }
+
+        for column, definition in CONTENT_CONTEXT_COLUMNS.items():
+            if column not in existing_columns:
+                connection.execute(
+                    f"ALTER TABLE contents ADD COLUMN {column} {definition}"
+                )
+
+        activity_columns = {
+            row[1]
+            for row in connection.execute("PRAGMA table_info(activities)")
+        }
+        for column, definition in ACTIVITY_COLUMNS.items():
+            if column not in activity_columns:
+                connection.execute(
+                    f"ALTER TABLE activities ADD COLUMN {column} {definition}"
+                )
+
         connection.commit()
 
 

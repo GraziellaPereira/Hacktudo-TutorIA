@@ -10,24 +10,35 @@ from pathlib import Path
 import shutil
 
 
-from app.services.teacher_service import process_teacher_content
+from app.services.teacher_service import (
+    process_teacher_content
+)
 
-from app.model.context import LearningContext
+from app.model.context import (
+    LearningContext
+)
 
-from app.services.file_service import extract_text
+from app.services.file_service import (
+    extract_text
+)
 
 
 from app.storage.content_repository import (
-    get_content
+    get_content,
+    get_content_context
 )
 
+
 from app.storage.topic_repository import (
-    get_content_topics
+    get_content_topics,
+    get_topic
 )
+
 
 from app.storage.activity_repository import (
     get_content_activities,
     get_pending_activities_by_content,
+    get_approved_activities_by_content,
     get_activity,
     update_activity_review
 )
@@ -38,12 +49,15 @@ from app.api.schemas import (
 )
 
 
+from app.services.regenerate_service import (
+    regenerate_activity
+)
+
 
 router = APIRouter(
     prefix="/teachers",
     tags=["Professor"]
 )
-
 
 
 # ==================================================
@@ -74,10 +88,6 @@ def create_teacher_content(
 ):
 
 
-    # ===============================
-    # Salvar arquivo temporariamente
-    # ===============================
-
     temp_path = Path(
         "temp"
     ) / file.filename
@@ -99,18 +109,10 @@ def create_teacher_content(
         )
 
 
-    # ===============================
-    # Extrair texto PDF/PPTX
-    # ===============================
-
     text = extract_text(
         str(temp_path)
     )
 
-
-    # ===============================
-    # Criar contexto da IA
-    # ===============================
 
     context = LearningContext(
 
@@ -129,10 +131,6 @@ def create_teacher_content(
     )
 
 
-    # ===============================
-    # Processar conteúdo
-    # ===============================
-
     result = process_teacher_content(
 
         teacher_id,
@@ -147,8 +145,6 @@ def create_teacher_content(
 
 
     return result
-
-
 
 
 
@@ -181,10 +177,8 @@ def teacher_content(
 
 
 
-
-
 # ==================================================
-# Buscar questões pendentes de revisão
+# Questões pendentes
 # ==================================================
 
 @router.get(
@@ -197,12 +191,8 @@ def pending_activities(
 ):
 
     return get_pending_activities_by_content(
-
         content_id
-
     )
-
-
 
 
 
@@ -223,20 +213,15 @@ def review_activity(
 
 
     activity = get_activity(
-
         activity_id
-
     )
 
 
     if not activity:
 
         raise HTTPException(
-
             status_code=404,
-
             detail="Atividade não encontrada"
-
         )
 
 
@@ -263,10 +248,132 @@ def review_activity(
 
     return {
 
-        "message": "Revisão atualizada",
+        "message":
+        "Revisão atualizada",
 
-        "activity_id": activity_id,
+        "activity_id":
+        activity_id,
 
-        "status": review.review_status
+        "status":
+        review.review_status
+
+    }
+
+
+
+# ==================================================
+# Questões aprovadas
+# ==================================================
+
+@router.get(
+    "/contents/{content_id}/activities/approved"
+)
+def approved_activities(
+
+    content_id: str
+
+):
+
+    return get_approved_activities_by_content(
+        content_id
+    )
+
+
+
+# ==================================================
+# Regenerar questão pela IA
+# ==================================================
+
+@router.post(
+    "/activities/{activity_id}/regenerate/{content_id}"
+)
+def regenerate_question(
+
+    activity_id: str,
+
+    content_id: str
+
+):
+
+
+    activity = get_activity(
+        activity_id
+    )
+
+
+    if not activity:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Atividade não encontrada"
+
+        )
+
+
+    # busca contexto original usado pelo professor
+
+    content_context = get_content_context(
+        content_id
+    )
+
+
+    if not content_context:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Contexto do conteúdo não encontrado"
+
+        )
+
+
+    # busca tópico
+
+    topic = get_topic(
+        activity["topic_id"]
+    )
+
+
+    if not topic:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail="Tópico não encontrado"
+
+        )
+
+
+
+    try:
+        new_id = regenerate_activity(
+            activity,
+            content_context,
+            topic
+        )
+    except ValueError as error:
+        raise HTTPException(
+            status_code=422,
+            detail=str(error),
+        ) from error
+
+
+    return {
+
+        "message":
+
+        "Questão regenerada com sucesso",
+
+        "old_activity":
+
+        activity_id,
+
+        "new_activity":
+
+        new_id
 
     }

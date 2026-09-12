@@ -22,7 +22,8 @@ def create_activity(
     review_status: str = "pending",
     validation_score: int | None = None,
     validation_warnings: list[str] = None,
-    teacher_modified: bool = False
+    teacher_modified: bool = False,
+    regenerated_from: str | None = None
 ):
 
     activity_id = str(uuid.uuid4())
@@ -53,29 +54,31 @@ def create_activity(
                 review_status,
                 validation_score,
                 validation_warnings,
-                teacher_modified
+                teacher_modified,
+                regenerated_from
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                activity_id,
-                topic_id,
-                topic,
-                learning_objective,
-                activity_type,
-                difficulty,
-                cognitive_skill,
-                learning_dimension,
-                question,
-                json.dumps(options, ensure_ascii=False),
-                correct_answer,
-                explanation,
-                json.dumps(hints, ensure_ascii=False),
-                review_status,
-                validation_score,
-                json.dumps(validation_warnings, ensure_ascii=False),
-                1 if teacher_modified else 0
-            )
+    activity_id,
+    topic_id,
+    topic,
+    learning_objective,
+    activity_type,
+    difficulty,
+    cognitive_skill,
+    learning_dimension,
+    question,
+    json.dumps(options, ensure_ascii=False),
+    correct_answer,
+    explanation,
+    json.dumps(hints, ensure_ascii=False),
+    review_status,
+    validation_score,
+    json.dumps(validation_warnings, ensure_ascii=False),
+    1 if teacher_modified else 0,
+    regenerated_from
+)
         )
 
 
@@ -209,19 +212,23 @@ def get_content_activities(content_id):
         rows = connection.execute(
             """
             SELECT a.*
+
             FROM activities a
+
             INNER JOIN topics t
                 ON a.topic_id = t.id
+
             WHERE t.content_id = ?
+
             """,
             (content_id,)
         ).fetchall()
 
+
     return [
-        dict(row)
+        _convert_activity(row)
         for row in rows
     ]
-
 def update_activity_review(
 
     activity_id: str,
@@ -291,4 +298,96 @@ def update_activity_review(
 
             )
 
+        )
+
+def get_approved_activities_by_content(
+    content_id: str
+):
+
+    with connection_scope() as connection:
+
+        rows = connection.execute(
+            """
+            SELECT a.*
+
+            FROM activities a
+
+            INNER JOIN topics t
+                ON a.topic_id = t.id
+
+            WHERE t.content_id = ?
+
+            AND a.review_status = 'approved'
+
+            """,
+            (
+                content_id,
+            )
+
+        ).fetchall()
+
+
+    return [
+        _convert_activity(row)
+        for row in rows
+    ]
+
+def get_pending_activities_by_content(
+
+    content_id: str
+
+):
+
+    with connection_scope() as connection:
+
+        rows = connection.execute(
+
+            """
+            SELECT a.*
+
+            FROM activities a
+
+            INNER JOIN topics t
+
+                ON a.topic_id = t.id
+
+            WHERE t.content_id = ?
+
+            AND a.review_status = 'pending'
+
+            """,
+
+            (
+                content_id,
+            )
+
+        ).fetchall()
+
+
+    return [
+
+        _convert_activity(row)
+
+        for row in rows
+
+    ]
+
+def mark_activity_regenerated(
+    activity_id: str
+):
+
+    with connection_scope() as connection:
+
+        connection.execute(
+            """
+            UPDATE activities
+
+            SET review_status = 'regenerated'
+
+            WHERE id = ?
+
+            """,
+            (
+                activity_id,
+            )
         )
