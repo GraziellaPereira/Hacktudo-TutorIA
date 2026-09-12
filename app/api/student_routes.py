@@ -26,6 +26,10 @@ from app.storage.topic_repository import (
     get_content_topics
 )
 
+from app.storage.recommendation_repository import (
+    get_student_recommendations
+)
+
 from app.storage.learning_method_repository import (
     get_learning_methods
 )
@@ -48,6 +52,25 @@ from app.services.learning_method_service import (
     generate_learning_material
 )
 
+from app.storage.student_attempt_repository import (
+    create_attempt
+)
+
+from app.storage.performance_repository import (
+    get_student_performance_by_concept
+)
+
+from app.services.adaptive_learning_service import (
+    generate_adaptive_material
+)
+
+from app.storage.performance_repository import (
+    get_student_performance_by_concept
+)
+
+from app.storage.topic_repository import (
+    get_content_topics
+)
 
 router = APIRouter(
     prefix="/students",
@@ -663,3 +686,151 @@ def student_profile(
 
 
     return student
+
+@router.post(
+    "/{student_id}/materials/{material_id}/attempt"
+)
+def register_attempt(
+
+    student_id: str,
+
+    material_id: str,
+
+    data: dict
+
+):
+
+    attempt_id = create_attempt(
+
+        student_id,
+
+        material_id,
+
+        data["item_id"],
+
+        data["item_type"],
+
+        data.get(
+            "concept"
+        ),
+
+        data["correct"],
+
+        data.get(
+            "response_time_seconds",
+            0
+        )
+
+    )
+
+
+    return {
+
+        "message":
+        "Resposta registrada",
+
+        "attempt_id":
+        attempt_id
+
+    }
+
+@router.get(
+    "/{student_id}/performance"
+)
+def student_performance(
+    student_id: str
+):
+
+    student = get_student(
+        student_id
+    )
+
+    if not student:
+        raise HTTPException(
+            status_code=404,
+            detail="Aluno não encontrado"
+        )
+
+
+    return get_student_performance_by_concept(
+        student_id
+    )
+
+@router.post(
+    "/{student_id}/contents/{content_id}/adaptive"
+)
+def adaptive_learning(
+    student_id: str,
+    content_id: str
+):
+
+    student = get_student(
+        student_id
+    )
+
+    if not student:
+        raise HTTPException(
+            404,
+            "Aluno não encontrado"
+        )
+
+
+    content = get_content(
+        content_id
+    )
+
+    if not content:
+        raise HTTPException(
+            404,
+            "Conteúdo não encontrado"
+        )
+
+
+    topics = get_content_topics(
+        content_id
+    )
+
+    if not topics:
+        raise HTTPException(
+            status_code=400,
+            detail="Conteúdo sem tópicos"
+        )
+
+    topic = Topic.model_validate(
+        topics[0]
+    )
+
+
+    performance = get_student_performance_by_concept(
+        student_id
+    )
+
+
+    student_context = StudentContext(
+        student_id=student["id"],
+        education_level=student["education_level"],
+        grade_or_period=student["grade_or_period"],
+        preferred_method=None
+    )
+
+
+    return generate_adaptive_material(
+        student_context,
+        content,
+        topic,
+        performance
+    )
+
+
+@router.get(
+    "/{student_id}/contents/{content_id}/recommendations"
+)
+def recommendations_history(
+    student_id: str,
+    content_id: str
+):
+
+    return get_student_recommendations(
+        student_id,
+        content_id
+    )

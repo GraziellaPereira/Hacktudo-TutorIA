@@ -22,7 +22,8 @@ def process_teacher_content(
     content_id = create_content(
         teacher_id=teacher_id,
         title=title,
-        original_text=text
+        original_text=text,
+        context=context
     )
 
 

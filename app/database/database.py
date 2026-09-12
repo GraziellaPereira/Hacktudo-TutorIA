@@ -172,6 +172,48 @@ CREATE TABLE IF NOT EXISTS student_learning_preferences (
 
 );
 
+CREATE TABLE IF NOT EXISTS student_activity_attempts (
+
+    id TEXT PRIMARY KEY,
+
+    student_id TEXT NOT NULL,
+
+    material_id TEXT NOT NULL,
+
+    item_id TEXT NOT NULL,
+
+    item_type TEXT NOT NULL,
+
+    concept TEXT,
+
+    correct INTEGER NOT NULL,
+
+    response_time_seconds INTEGER DEFAULT 0,
+
+    created_at TEXT NOT NULL
+
+);
+
+CREATE TABLE IF NOT EXISTS student_recommendations (
+
+    id TEXT PRIMARY KEY,
+
+    student_id TEXT NOT NULL,
+
+    content_id TEXT NOT NULL,
+
+    status TEXT NOT NULL,
+
+    action TEXT NOT NULL,
+
+    method TEXT,
+
+    reason TEXT,
+
+    created_at TEXT NOT NULL
+
+);
+
 """
 
 
@@ -290,6 +332,11 @@ def initialize_database() -> None:
                     "Organização visual dos conceitos principais",
                 ),
                 (
+                    "infographic",
+                    "Infográfico",
+                    "Resumo visual dos conceitos principais",
+                ),
+                (
                     "quiz",
                     "Quiz",
                     "Teste de conhecimento com questões",
@@ -300,6 +347,14 @@ def initialize_database() -> None:
                     "Explicação passo a passo adaptada ao aluno",
                 ),
             ],
+        )
+
+        connection.execute(
+            """
+            UPDATE learning_methods
+            SET active = 0
+            WHERE id IN ('quiz', 'explanation')
+            """
         )
 
         connection.commit()

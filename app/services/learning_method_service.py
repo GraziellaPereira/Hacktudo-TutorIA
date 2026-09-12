@@ -19,7 +19,8 @@ client = genai.Client(
 def generate_learning_material(
     content,
     student,
-    topic
+    topic,
+    focus_concepts=None
 ):
     if isinstance(topic, str):
         topic_name = topic
@@ -33,6 +34,21 @@ def generate_learning_material(
         topic_learning_objectives = topic.learning_objectives
         topic_concepts = topic.concepts
         topic_practical_applications = topic.practical_applications
+
+    focus_concepts = focus_concepts or []
+    focus_instruction = ""
+    if focus_concepts:
+        focus_instruction = f"""
+
+FOCO ADAPTATIVO:
+
+O aluno apresentou dificuldade nos conceitos abaixo:
+{focus_concepts}
+
+Priorize esses conceitos no material e concentre neles a maior parte das
+perguntas, explicações e relações. Não dedique espaço a conceitos que não
+estejam nessa lista, exceto quando forem indispensáveis para compreendê-los.
+"""
 
     prompt = f"""
 
@@ -126,6 +142,8 @@ Conceitos:
 
 Aplicações:
 {topic_practical_applications}
+
+{focus_instruction}
 
 
 Retorne somente JSON.
