@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import styles from '../../../styles/modal.module.css';
 
 import ImportContentModal from './ImportContentModal';
+import { getTeacherContents } from '@/context/contentService';
 
 interface FileExplorerModalProps {
   content: {
@@ -29,9 +30,9 @@ export default function FileExplorerModal({ content, onClose }: FileExplorerModa
     classroom,
 
     context,
-
-    files = [],
   } = content ?? {};
+
+  const [files, setFiles] = useState<any[]>(content?.files ?? []);
 
   const [selectedFile, setSelectedFile] = useState<any>(null);
 
@@ -39,13 +40,25 @@ export default function FileExplorerModal({ content, onClose }: FileExplorerModa
 
   const subjectName = typeof subject === 'string' ? subject : (subject?.name ?? 'Matéria');
 
-  function handleImportSuccess() {
-    /*
-      Depois podemos atualizar
-      os arquivos vindos da API aqui.
-    */
+  async function loadFiles() {
+    if (!teacher?.id) {
+      return;
+    }
 
-    console.log('Conteúdo importado');
+    const teacherContents = await getTeacherContents(teacher.id);
+    setFiles(teacherContents);
+  }
+
+  useEffect(() => {
+    loadFiles().catch((error) => {
+      console.error(error);
+    });
+  }, [teacher?.id]);
+
+  function handleImportSuccess() {
+    loadFiles().catch((error) => {
+      console.error(error);
+    });
   }
 
   return (

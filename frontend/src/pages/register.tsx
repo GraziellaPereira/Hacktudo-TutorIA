@@ -37,6 +37,16 @@ export default function Register() {
         email,
       });
 
+      // Salva o professor atual para o painel /teacher
+
+      localStorage.setItem(
+        'teacher_id',
+
+        response.teacher_id,
+      );
+
+      // Mantém no estado para exibir na tela
+
       setTeacherId(response.teacher_id);
     } catch (error) {
       console.error(error);
@@ -48,7 +58,7 @@ export default function Register() {
   }
 
   function finishRegister() {
-    router.push('/');
+    router.push('/teacher');
   }
 
   return (
@@ -102,7 +112,7 @@ export default function Register() {
               📋 Copiar código
             </button>
 
-            <button onClick={finishRegister}>Fechar</button>
+            <button onClick={finishRegister}>Entrar no painel</button>
           </>
         )}
       </div>

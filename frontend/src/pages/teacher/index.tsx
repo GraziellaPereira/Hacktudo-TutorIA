@@ -12,6 +12,8 @@ import FileExplorerModal from '../components/teacher/FileExplorerModal';
 
 import styles from '../../styles/teacher.module.css';
 
+import { getTeacher } from '../../services/teacherService';
+
 export default function ProfessorPage() {
   const [teacher, setTeacher] = useState<any>(null);
 
@@ -35,9 +37,14 @@ export default function ProfessorPage() {
 
   useEffect(() => {
     async function loadTeacher() {
-      const response = await fetch('/api/profile');
+      const teacherId = localStorage.getItem('teacher_id');
 
-      const data = await response.json();
+      if (!teacherId) {
+        console.error('Professor não encontrado');
+        return;
+      }
+
+      const data = await getTeacher(teacherId);
 
       setTeacher(data);
     }
@@ -48,13 +55,11 @@ export default function ProfessorPage() {
   // Atualizar perfil
 
   async function handleUpdateProfile(updatedTeacher: any) {
-    const response = await fetch('/api/profile', {
+    const response = await fetch(`/api/teachers/${teacher.id}`, {
       method: 'PUT',
-
       headers: {
         'Content-Type': 'application/json',
       },
-
       body: JSON.stringify(updatedTeacher),
     });
 
@@ -64,7 +69,6 @@ export default function ProfessorPage() {
 
     setShowEditProfile(false);
   }
-
   // Criar contexto
 
   async function handleAddContext(context: any) {

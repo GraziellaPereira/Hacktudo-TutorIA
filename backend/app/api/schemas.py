@@ -31,3 +31,8 @@ class TeacherCreateRequest(BaseModel):
     name: str
     description: str
     email: str | None = None
+
+
+class ContextCreateRequest(BaseModel):
+    name: str
+    description: str = ""

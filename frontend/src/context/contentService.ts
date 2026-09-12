@@ -51,3 +51,13 @@ export async function createTeacherContent(data: CreateContentRequest) {
 
   return response.json();
 }
+
+export async function getTeacherContents(teacherId: string | number) {
+  const response = await fetch(`/api/teachers/${teacherId}/contents`);
+
+  if (!response.ok) {
+    throw new Error('Erro ao carregar conteúdos');
+  }
+
+  return response.json();
+}

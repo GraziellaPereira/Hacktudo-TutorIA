@@ -2,6 +2,7 @@ from datetime import datetime
 import uuid
 
 from app.database.database import connection_scope
+from app.storage.context_repository import get_teacher_contexts
 
 
 def create_teacher(
@@ -36,7 +37,12 @@ def get_teacher(teacher_id: str):
             (teacher_id,),
         ).fetchone()
 
-    return dict(row) if row else None
+    if not row:
+        return None
+
+    teacher = dict(row)
+    teacher["contexts"] = get_teacher_contexts(teacher_id)
+    return teacher
 
 
 def get_teachers():

@@ -1,47 +1,39 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { database } from '../../../data/database';
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://127.0.0.1:8000';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const teacher = database.teachers.find((item: any) => item.id === Number(req.body.teacherId));
-
-    if (!teacher) {
-      return res.status(404).json({
-        message: 'Professor não encontrado',
-      });
-    }
-
-    const newContext = {
-      id: Date.now(),
-
-      name: req.body.name,
-
-      description: req.body.description,
-
-      subjects: [],
-    };
-
-    teacher.contexts = teacher.contexts ?? [];
-
-    teacher.contexts.push(newContext);
-
-    return res.status(201).json(newContext);
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({
+      message: 'Método não permitido',
+    });
   }
 
-  if (req.method === 'GET') {
-    const contexts: any[] = [];
+  const { teacherId, name, description = '' } = req.body;
 
-    database.teachers.forEach((teacher: any) => {
-      teacher.contexts?.forEach((context: any) => {
-        contexts.push(context);
-      });
+  if (typeof teacherId !== 'string' || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({
+      message: 'Professor e nome do contexto são obrigatórios',
+    });
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/teachers/${teacherId}/contexts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name, description }),
     });
 
-    return res.status(200).json(contexts);
-  }
+    const data = await response.json();
 
-  return res.status(405).json({
-    message: 'Método não permitido',
-  });
+    return res.status(response.status).json(data);
+  } catch (error) {
+    console.error('Erro ao comunicar com a API de contextos:', error);
+
+    return res.status(502).json({
+      message: 'Não foi possível comunicar com o backend',
+    });
+  }
 }

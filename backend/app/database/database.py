@@ -19,6 +19,15 @@ CREATE TABLE IF NOT EXISTS teachers (
     created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS contexts (
+    id TEXT PRIMARY KEY,
+    teacher_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id)
+);
+
 CREATE TABLE IF NOT EXISTS students (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,

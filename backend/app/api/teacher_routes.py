@@ -27,6 +27,7 @@ from app.storage.content_repository import (
     get_content,
     get_content_context
 )
+from app.storage.content_repository import get_teacher_contents
 
 
 from app.storage.topic_repository import (
@@ -50,6 +51,7 @@ from app.storage.student_content_repository import (
 
 from app.api.schemas import (
     ActivityReviewRequest,
+    ContextCreateRequest,
     TeacherCreateRequest,
 )
 
@@ -63,6 +65,8 @@ from app.storage.teacher_repository import (
     get_teacher,
     get_teachers,
 )
+
+from app.storage.context_repository import create_context
 
 
 router = APIRouter(
@@ -97,9 +101,37 @@ def teacher_profile(teacher_id: str):
     return teacher
 
 
+@router.post("/{teacher_id}/contexts")
+def create_teacher_context(teacher_id: str, data: ContextCreateRequest):
+    if not get_teacher(teacher_id):
+        raise HTTPException(
+            status_code=404,
+            detail="Professor não encontrado",
+        )
+
+    context = create_context(
+        teacher_id=teacher_id,
+        name=data.name,
+        description=data.description,
+    )
+    context["classrooms"] = []
+    context["subjects"] = []
+    return context
+
+
 # ==================================================
 # Criar conteúdo pelo professor
 # ==================================================
+
+@router.get("/{teacher_id}/contents")
+def list_teacher_contents(teacher_id: str):
+    if not get_teacher(teacher_id):
+        raise HTTPException(
+            status_code=404,
+            detail="Professor não encontrado",
+        )
+
+    return get_teacher_contents(teacher_id)
 
 @router.post("/{teacher_id}/contents")
 def create_teacher_content(
