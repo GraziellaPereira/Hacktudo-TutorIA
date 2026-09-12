@@ -43,9 +43,14 @@ from app.storage.activity_repository import (
     update_activity_review
 )
 
+from app.storage.student_content_repository import (
+    create_student_content
+)
+
 
 from app.api.schemas import (
-    ActivityReviewRequest
+    ActivityReviewRequest,
+    TeacherCreateRequest,
 )
 
 
@@ -53,11 +58,43 @@ from app.services.regenerate_service import (
     regenerate_activity
 )
 
+from app.storage.teacher_repository import (
+    create_teacher,
+    get_teacher,
+    get_teachers,
+)
+
 
 router = APIRouter(
     prefix="/teachers",
     tags=["Professor"]
 )
+
+
+@router.post("")
+def create_teacher_route(data: TeacherCreateRequest):
+    teacher_id = create_teacher(
+        name=data.name,
+        description=data.description,
+        email=data.email,
+    )
+    return {"teacher_id": teacher_id}
+
+
+@router.get("")
+def list_teachers():
+    return get_teachers()
+
+
+@router.get("/{teacher_id}")
+def teacher_profile(teacher_id: str):
+    teacher = get_teacher(teacher_id)
+    if not teacher:
+        raise HTTPException(
+            status_code=404,
+            detail="Professor não encontrado",
+        )
+    return teacher
 
 
 # ==================================================
@@ -86,6 +123,12 @@ def create_teacher_content(
     file: UploadFile = File(...)
 
 ):
+
+    if not get_teacher(teacher_id):
+        raise HTTPException(
+            status_code=404,
+            detail="Professor não encontrado",
+        )
 
 
     temp_path = Path(
@@ -375,5 +418,35 @@ def regenerate_question(
         "new_activity":
 
         new_id
+
+    }
+
+@router.post(
+    "/contents/{content_id}/students/{student_id}"
+)
+def assign_content_to_student(
+
+    content_id: str,
+
+    student_id: str
+
+):
+
+    relation_id = create_student_content(
+
+        student_id,
+
+        content_id
+
+    )
+
+
+    return {
+
+        "message":
+        "Conteúdo vinculado ao aluno",
+
+        "relation_id":
+        relation_id
 
     }

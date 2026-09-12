@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.database.database import initialize_database
 from app.api.teacher_routes import router as teacher_router
+from app.api.student_routes import router as student_router
 
 
 @asynccontextmanager
@@ -25,4 +26,8 @@ def health_check():
 
 app.include_router(
     teacher_router
+)
+
+app.include_router(
+    student_router
 )

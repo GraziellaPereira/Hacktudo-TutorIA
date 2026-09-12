@@ -14,6 +14,7 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS teachers (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
     email TEXT UNIQUE,
     created_at TEXT NOT NULL
 );
@@ -35,6 +36,8 @@ CREATE TABLE IF NOT EXISTS contents (
     title TEXT NOT NULL,
 
     original_text TEXT NOT NULL,
+
+    summary TEXT,
 
     subject TEXT NOT NULL,
 
@@ -109,19 +112,71 @@ CREATE TABLE IF NOT EXISTS attempts (
 CREATE TABLE IF NOT EXISTS learning_materials (
     id TEXT PRIMARY KEY,
     student_id TEXT NOT NULL,
+    content_id TEXT NOT NULL,
     topic_id TEXT,
     method TEXT NOT NULL,
     title TEXT NOT NULL,
     summary TEXT NOT NULL,
     payload TEXT NOT NULL,
+    material TEXT NOT NULL,
     created_at TEXT NOT NULL,
     FOREIGN KEY (student_id) REFERENCES students(id),
-    FOREIGN KEY (topic_id) REFERENCES topics(id)
+    FOREIGN KEY (content_id) REFERENCES contents(id)
 );
+
+CREATE TABLE IF NOT EXISTS student_contents (
+
+    id TEXT PRIMARY KEY,
+
+    student_id TEXT NOT NULL,
+
+    content_id TEXT NOT NULL,
+
+    created_at TEXT NOT NULL,
+
+    FOREIGN KEY(student_id)
+        REFERENCES students(id),
+
+    FOREIGN KEY(content_id)
+        REFERENCES contents(id),
+
+    UNIQUE(student_id, content_id)
+
+);
+
+CREATE TABLE IF NOT EXISTS learning_methods (
+
+    id TEXT PRIMARY KEY,
+
+    name TEXT NOT NULL,
+
+    description TEXT NOT NULL,
+
+    active INTEGER DEFAULT 1
+
+);
+
+CREATE TABLE IF NOT EXISTS student_learning_preferences (
+
+    id TEXT PRIMARY KEY,
+
+    student_id TEXT NOT NULL,
+
+    content_id TEXT NOT NULL,
+
+    topic_id TEXT,
+
+    preferred_method TEXT NOT NULL,
+
+    created_at TEXT NOT NULL
+
+);
+
 """
 
 
 CONTENT_CONTEXT_COLUMNS = {
+    "summary": "TEXT",
     "subject": "TEXT NOT NULL DEFAULT ''",
     "education_level": "TEXT NOT NULL DEFAULT ''",
     "grade_or_period": "TEXT NOT NULL DEFAULT ''",
@@ -130,8 +185,21 @@ CONTENT_CONTEXT_COLUMNS = {
     "assessment_focus": "TEXT NOT NULL DEFAULT '[]'",
 }
 
+TEACHER_COLUMNS = {
+    "description": "TEXT NOT NULL DEFAULT ''",
+}
+
 ACTIVITY_COLUMNS = {
     "regenerated_from": "TEXT",
+}
+
+LEARNING_MATERIAL_COLUMNS = {
+    "content_id": "TEXT",
+    "topic_id": "TEXT",
+    "title": "TEXT NOT NULL DEFAULT ''",
+    "summary": "TEXT NOT NULL DEFAULT ''",
+    "payload": "TEXT NOT NULL DEFAULT '{}'",
+    "material": "TEXT",
 }
 
 
@@ -157,6 +225,16 @@ def initialize_database() -> None:
                     f"ALTER TABLE contents ADD COLUMN {column} {definition}"
                 )
 
+        teacher_columns = {
+            row[1]
+            for row in connection.execute("PRAGMA table_info(teachers)")
+        }
+        for column, definition in TEACHER_COLUMNS.items():
+            if column not in teacher_columns:
+                connection.execute(
+                    f"ALTER TABLE teachers ADD COLUMN {column} {definition}"
+                )
+
         activity_columns = {
             row[1]
             for row in connection.execute("PRAGMA table_info(activities)")
@@ -166,6 +244,63 @@ def initialize_database() -> None:
                 connection.execute(
                     f"ALTER TABLE activities ADD COLUMN {column} {definition}"
                 )
+
+        material_columns = {
+            row[1]
+            for row in connection.execute(
+                "PRAGMA table_info(learning_materials)"
+            )
+        }
+        for column, definition in LEARNING_MATERIAL_COLUMNS.items():
+            if column not in material_columns:
+                connection.execute(
+                    f"ALTER TABLE learning_materials ADD COLUMN {column} {definition}"
+                )
+
+        material_columns = {
+            row[1]
+            for row in connection.execute(
+                "PRAGMA table_info(learning_materials)"
+            )
+        }
+        if "material" in material_columns and "payload" in material_columns:
+            connection.execute(
+                "UPDATE learning_materials SET material = payload "
+                "WHERE material IS NULL"
+            )
+
+        connection.executemany(
+            """
+            INSERT OR IGNORE INTO learning_methods (
+                id,
+                name,
+                description
+            )
+            VALUES (?, ?, ?)
+            """,
+            [
+                (
+                    "flashcards",
+                    "Flashcards",
+                    "Cartões de pergunta e resposta para revisão",
+                ),
+                (
+                    "mind_map",
+                    "Mapa mental",
+                    "Organização visual dos conceitos principais",
+                ),
+                (
+                    "quiz",
+                    "Quiz",
+                    "Teste de conhecimento com questões",
+                ),
+                (
+                    "explanation",
+                    "Explicação guiada",
+                    "Explicação passo a passo adaptada ao aluno",
+                ),
+            ],
+        )
 
         connection.commit()
 

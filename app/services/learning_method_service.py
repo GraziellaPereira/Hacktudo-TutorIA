@@ -82,10 +82,17 @@ Se o método for mapa mental:
 
 - crie uma estrutura hierárquica com pelo menos três nós;
 - o primeiro nó deve ser o conceito central;
+- o nó central deve possuir `level: 0`;
+- cada filho deve possuir `level` igual ao nível do pai mais 1;
 - use children para representar conceitos relacionados;
-- prefira colocar objetos completos em children; se usar referências,
-  informe apenas ids de nós que também existam no mapa;
+- coloque objetos MindMapNode completos em children;
+- nunca use strings ou apenas IDs em children;
+- retorne connections com source, target e type para cada relação;
+- source e target devem corresponder aos ids dos nós existentes;
 - cada nó deve possuir entre 2 e 6 palavras-chave;
+- use títulos específicos, como "Domínio e Saída", "Representação Gráfica",
+  "Função Afim" ou "Função Quadrática"; evite títulos genéricos como
+  "Conjuntos", "Tópicos" ou "Propriedades";
 - cada nó deve possuir um resumo curto de uma ou duas frases;
 - diferencie conceitos principais, secundários e relações;
 - use concepts para listar ideias associadas ao nó;
@@ -146,7 +153,9 @@ O método escolhido é "{student.preferred_method}".
 Retorne obrigatoriamente o conteúdo desse método preenchido.
 Para flashcards, retorne entre 8 e 12 objetos em `flashcards`.
 Para mind_map, retorne pelo menos três nós hierárquicos, com palavras-chave,
-resumo e relações em `children`.
+resumo e relações em `children`, sempre como objetos completos.
+Inclua `connections` com source, target e type para representar as relações.
+Inclua `level: 0` no nó central e incremente o level em cada descendente.
 Para infographic, retorne pelo menos três seções com textos curtos e pontos-chave.
 Não deixe a lista correspondente ao método vazia.
 """

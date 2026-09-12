@@ -166,3 +166,88 @@ def get_content_context(content_id):
         assessment_focus=json.loads(row["assessment_focus"] or "[]")
 
     )
+
+def get_student_contents():
+
+    with connection_scope() as connection:
+
+        rows = connection.execute(
+            """
+            SELECT DISTINCT
+
+                c.id,
+                c.title,
+                c.subject,
+                c.education_level,
+                c.grade_or_period,
+                c.target_audience,
+                c.learning_goal,
+                c.created_at
+
+            FROM contents c
+
+            INNER JOIN topics t
+                ON t.content_id = c.id
+
+            INNER JOIN activities a
+                ON a.topic_id = t.id
+
+            WHERE a.review_status = 'approved'
+
+            ORDER BY c.created_at DESC
+
+            """
+        ).fetchall()
+
+
+    return [
+        dict(row)
+        for row in rows
+    ]
+
+def update_content_summary(
+    content_id: str,
+    summary: str
+):
+
+    with connection_scope() as connection:
+
+        connection.execute(
+            """
+            UPDATE contents
+
+            SET summary = ?
+
+            WHERE id = ?
+
+            """,
+            (
+                summary,
+                content_id
+            )
+        )
+
+def update_content_summary(
+    content_id,
+    summary
+):
+
+    with connection_scope() as connection:
+
+        connection.execute(
+            """
+            UPDATE contents
+
+            SET summary = ?
+
+            WHERE id = ?
+
+            """,
+            (
+                json.dumps(
+                    summary,
+                    ensure_ascii=False
+                ),
+                content_id
+            )
+        )

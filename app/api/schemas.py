@@ -17,3 +17,17 @@ class ActivityReviewRequest(BaseModel):
     explanation: Optional[str] = None
 
     hints: Optional[list[str]] = None
+
+class StudentCreateRequest(BaseModel):
+
+    name: str
+
+    education_level: str
+
+    grade_or_period: str
+
+
+class TeacherCreateRequest(BaseModel):
+    name: str
+    description: str
+    email: str | None = None
