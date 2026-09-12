@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import uuid
 
 from app.database.database import connection_scope
@@ -10,8 +11,8 @@ def create_context(teacher_id: str, name: str, description: str = ""):
     with connection_scope() as connection:
         connection.execute(
             """
-            INSERT INTO contexts (id, teacher_id, name, description, created_at)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO contexts (id, teacher_id, name, description, classrooms, subjects, created_at)
+            VALUES (?, ?, ?, ?, '[]', '[]', ?)
             """,
             (context_id, teacher_id, name, description, datetime.now().isoformat()),
         )
@@ -26,7 +27,13 @@ def get_context(context_id: str):
             (context_id,),
         ).fetchone()
 
-    return dict(row) if row else None
+    if not row:
+        return None
+
+    context = dict(row)
+    context["classrooms"] = json.loads(context.get("classrooms") or "[]")
+    context["subjects"] = json.loads(context.get("subjects") or "[]")
+    return context
 
 
 def get_teacher_contexts(teacher_id: str):
@@ -39,8 +46,26 @@ def get_teacher_contexts(teacher_id: str):
     contexts = []
     for row in rows:
         context = dict(row)
-        context["classrooms"] = []
-        context["subjects"] = []
+        context["classrooms"] = json.loads(context.get("classrooms") or "[]")
+        context["subjects"] = json.loads(context.get("subjects") or "[]")
         contexts.append(context)
 
     return contexts
+
+
+def update_context_structure(context_id: str, classrooms: list, subjects: list | None = None):
+    with connection_scope() as connection:
+        connection.execute(
+            """
+            UPDATE contexts
+            SET classrooms = ?, subjects = ?
+            WHERE id = ?
+            """,
+            (
+                json.dumps(classrooms, ensure_ascii=False),
+                json.dumps(subjects or [], ensure_ascii=False),
+                context_id,
+            ),
+        )
+
+    return get_context(context_id)

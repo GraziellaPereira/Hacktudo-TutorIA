@@ -107,21 +107,32 @@ export default function ProfessorPage() {
 
   // Atualizar turmas do contexto
 
-  function handleUpdateContext(updatedClassrooms: any[]) {
+  async function handleUpdateContext(updatedClassrooms: any[]) {
+    if (!selectedContext) return;
+
+    const response = await fetch('/api/contexts', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        teacherId: teacher.id,
+        contextId: selectedContext.id,
+        classrooms: updatedClassrooms,
+        subjects: selectedContext.subjects ?? [],
+      }),
+    });
+
+    if (!response.ok) {
+      alert('Não foi possível salvar as turmas.');
+      return;
+    }
+
+    const updatedContext = await response.json();
     setTeacher((prev: any) => ({
       ...prev,
-
       contexts: prev.contexts.map((context: any) =>
-        context.id === selectedContext.id
-          ? {
-              ...context,
-
-              classrooms: updatedClassrooms,
-            }
-          : context,
+        context.id === selectedContext.id ? updatedContext : context,
       ),
     }));
-
     setSelectedContext(null);
   }
 
@@ -130,7 +141,6 @@ export default function ProfessorPage() {
   function handleUpdateSubject(updatedSubject: any) {
     setTeacher((prev: any) => ({
       ...prev,
-
       contexts: prev.contexts.map((context: any) => ({
         ...context,
 

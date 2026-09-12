@@ -36,3 +36,8 @@ class TeacherCreateRequest(BaseModel):
 class ContextCreateRequest(BaseModel):
     name: str
     description: str = ""
+
+
+class ContextStructureUpdateRequest(BaseModel):
+    classrooms: list = []
+    subjects: list = []

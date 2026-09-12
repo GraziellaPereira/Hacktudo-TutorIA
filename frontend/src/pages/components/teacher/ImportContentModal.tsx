@@ -31,7 +31,7 @@ export default function ImportContentModal({ content, onClose, onSuccess }: any)
     try {
       setLoading(true);
 
-      await createTeacherContent({
+      const result = await createTeacherContent({
         teacherId: teacher.id,
 
         title,
@@ -54,7 +54,7 @@ export default function ImportContentModal({ content, onClose, onSuccess }: any)
       alert('Arquivo importado com sucesso!');
 
       if (onSuccess) {
-        onSuccess();
+        onSuccess(result);
       }
 
       onClose();
@@ -134,8 +134,10 @@ export default function ImportContentModal({ content, onClose, onSuccess }: any)
 
             disabled={loading}
           >
-            {loading ? 'Enviando...' : 'Salvar conteúdo'}
+            {loading ? 'Processando conteúdo...' : 'Salvar conteúdo'}
           </button>
+
+          {loading && <p>IA analisando o arquivo. Isso pode levar alguns instantes.</p>}
         </div>
       </div>
     </div>

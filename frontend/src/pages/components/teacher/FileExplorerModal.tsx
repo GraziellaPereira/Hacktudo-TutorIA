@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 import styles from '../../../styles/modal.module.css';
 
@@ -22,6 +23,7 @@ interface FileExplorerModalProps {
 }
 
 export default function FileExplorerModal({ content, onClose }: FileExplorerModalProps) {
+  const router = useRouter();
   const {
     teacher,
 
@@ -55,10 +57,14 @@ export default function FileExplorerModal({ content, onClose }: FileExplorerModa
     });
   }, [teacher?.id]);
 
-  function handleImportSuccess() {
-    loadFiles().catch((error) => {
-      console.error(error);
-    });
+  function handleImportSuccess(result: { content_id?: string }) {
+    if (result.content_id) {
+      onClose();
+      router.push(`/teacher/content/${result.content_id}/analysis`);
+      return;
+    }
+
+    loadFiles().catch((error) => console.error(error));
   }
 
   return (
@@ -118,9 +124,14 @@ export default function FileExplorerModal({ content, onClose }: FileExplorerModa
                       : styles.classroomItem
                   }
 
-                  onClick={() => setSelectedFile(file)}
+                  onClick={() => {
+                    setSelectedFile(file);
+                    if (file.id) {
+                      router.push(`/teacher/content/${file.id}/analysis`);
+                    }
+                  }}
                 >
-                  📄 {file.name}
+                  📄 {file.title ?? file.name ?? 'Conteúdo sem título'}
                 </div>
               ))
             ) : (
@@ -136,7 +147,7 @@ export default function FileExplorerModal({ content, onClose }: FileExplorerModa
                 <h3>Detalhes do arquivo</h3>
 
                 <p>
-                  <strong>Nome:</strong> {selectedFile.name}
+                  <strong>Nome:</strong> {selectedFile.title ?? selectedFile.name}
                 </p>
 
                 <p>

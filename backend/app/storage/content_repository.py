@@ -94,6 +94,14 @@ def create_content(
     return content_id
 
 
+def update_content_summary(content_id: str, summary: str) -> None:
+    with connection_scope() as connection:
+        connection.execute(
+            "UPDATE contents SET summary = ? WHERE id = ?",
+            (summary, content_id),
+        )
+
+
 def get_teacher_contents(teacher_id: str):
 
     with connection_scope() as connection:

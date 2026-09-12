@@ -11,7 +11,8 @@ import shutil
 
 
 from app.services.teacher_service import (
-    process_teacher_content
+    process_teacher_content,
+    generate_content_activities,
 )
 
 from app.model.context import (
@@ -28,6 +29,7 @@ from app.storage.content_repository import (
     get_content_context
 )
 from app.storage.content_repository import get_teacher_contents
+from app.database.database import connection_scope
 
 
 from app.storage.topic_repository import (
@@ -52,6 +54,7 @@ from app.storage.student_content_repository import (
 from app.api.schemas import (
     ActivityReviewRequest,
     ContextCreateRequest,
+    ContextStructureUpdateRequest,
     TeacherCreateRequest,
 )
 
@@ -66,7 +69,7 @@ from app.storage.teacher_repository import (
     get_teachers,
 )
 
-from app.storage.context_repository import create_context
+from app.storage.context_repository import create_context, update_context_structure
 
 
 router = APIRouter(
@@ -116,6 +119,22 @@ def create_teacher_context(teacher_id: str, data: ContextCreateRequest):
     )
     context["classrooms"] = []
     context["subjects"] = []
+    return context
+
+
+@router.put("/{teacher_id}/contexts/{context_id}")
+def update_teacher_context(
+    teacher_id: str,
+    context_id: str,
+    data: ContextStructureUpdateRequest,
+):
+    if not get_teacher(teacher_id):
+        raise HTTPException(status_code=404, detail="Professor não encontrado")
+
+    context = update_context_structure(context_id, data.classrooms, data.subjects)
+    if not context or context["teacher_id"] != teacher_id:
+        raise HTTPException(status_code=404, detail="Contexto não encontrado")
+
     return context
 
 
@@ -226,6 +245,51 @@ def create_teacher_content(
 # ==================================================
 # Buscar conteúdo completo
 # ==================================================
+
+@router.get("/contents/{content_id}/analysis")
+def content_analysis(content_id: str):
+    content = get_content(content_id)
+    if not content:
+        raise HTTPException(status_code=404, detail="Conteúdo não encontrado")
+
+    topics = get_content_topics(content_id)
+    learning_objectives = []
+    concepts = []
+    for topic in topics:
+        learning_objectives.extend(topic["learning_objectives"])
+        concepts.extend(topic["concepts"])
+
+    return {
+        "content_id": content_id,
+        "title": content["title"],
+        "summary": content.get("summary") or "",
+        "review_status": content.get("review_status", "pending"),
+        "topics": topics,
+        "learning_objectives": list(dict.fromkeys(learning_objectives)),
+        "concepts": list(dict.fromkeys(concepts)),
+        "activities": get_content_activities(content_id),
+    }
+
+
+@router.post("/contents/{content_id}/approve")
+def approve_content(content_id: str):
+    content = get_content(content_id)
+    if not content:
+        raise HTTPException(status_code=404, detail="Conteúdo não encontrado")
+
+    context = get_content_context(content_id)
+    activities = generate_content_activities(content_id, context)
+
+    with connection_scope() as connection:
+        connection.execute(
+            "UPDATE contents SET review_status = 'approved' WHERE id = ?",
+            (content_id,),
+        )
+
+    return {
+        **content_analysis(content_id),
+        "activities": activities,
+    }
 
 @router.get("/contents/{content_id}")
 def teacher_content(

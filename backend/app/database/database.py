@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS contexts (
     teacher_id TEXT NOT NULL,
     name TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
+    classrooms TEXT NOT NULL DEFAULT '[]',
+    subjects TEXT NOT NULL DEFAULT '[]',
     created_at TEXT NOT NULL,
     FOREIGN KEY (teacher_id) REFERENCES teachers(id)
 );
@@ -47,6 +49,8 @@ CREATE TABLE IF NOT EXISTS contents (
     original_text TEXT NOT NULL,
 
     summary TEXT,
+
+    review_status TEXT NOT NULL DEFAULT 'pending',
 
     subject TEXT NOT NULL,
 
@@ -228,12 +232,18 @@ CREATE TABLE IF NOT EXISTS student_recommendations (
 
 CONTENT_CONTEXT_COLUMNS = {
     "summary": "TEXT",
+    "review_status": "TEXT NOT NULL DEFAULT 'pending'",
     "subject": "TEXT NOT NULL DEFAULT ''",
     "education_level": "TEXT NOT NULL DEFAULT ''",
     "grade_or_period": "TEXT NOT NULL DEFAULT ''",
     "target_audience": "TEXT NOT NULL DEFAULT ''",
     "learning_goal": "TEXT NOT NULL DEFAULT ''",
     "assessment_focus": "TEXT NOT NULL DEFAULT '[]'",
+}
+
+CONTEXT_COLUMNS = {
+    "classrooms": "TEXT NOT NULL DEFAULT '[]'",
+    "subjects": "TEXT NOT NULL DEFAULT '[]'",
 }
 
 TEACHER_COLUMNS = {
@@ -284,6 +294,16 @@ def initialize_database() -> None:
             if column not in teacher_columns:
                 connection.execute(
                     f"ALTER TABLE teachers ADD COLUMN {column} {definition}"
+                )
+
+        context_columns = {
+            row[1]
+            for row in connection.execute("PRAGMA table_info(contexts)")
+        }
+        for column, definition in CONTEXT_COLUMNS.items():
+            if column not in context_columns:
+                connection.execute(
+                    f"ALTER TABLE contexts ADD COLUMN {column} {definition}"
                 )
 
         activity_columns = {
