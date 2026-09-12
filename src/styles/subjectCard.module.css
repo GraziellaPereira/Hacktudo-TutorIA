@@ -1,0 +1,160 @@
+.card {
+  background: #151b22;
+
+  border: 1px solid #27313b;
+
+  border-radius: 18px;
+
+  padding: 22px;
+
+  margin-bottom: 20px;
+
+  color: #ffffff;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+
+  transition: 0.3s;
+}
+
+.card:hover {
+  border-color: #ff8500;
+
+  transform: translateY(-3px);
+}
+
+/* Nome da matéria */
+
+.title {
+  font-size: 22px;
+
+  font-weight: 700;
+
+  margin: 0 0 10px;
+
+  color: #ffffff;
+}
+
+/* Descrição */
+
+.description {
+  color: #aeb6c1;
+
+  line-height: 1.5;
+
+  margin-bottom: 20px;
+}
+
+/* Blocos de informação */
+
+.info {
+  background: #0f141a;
+
+  border-radius: 12px;
+
+  padding: 15px;
+
+  margin-top: 15px;
+
+  border: 1px solid #222b35;
+}
+
+/* Títulos internos */
+
+.info h3 {
+  margin-top: 0;
+
+  margin-bottom: 12px;
+
+  color: #ff8500;
+
+  font-size: 16px;
+}
+
+/* Turmas */
+
+.classroom {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  padding: 10px 0;
+
+  border-bottom: 1px solid #222b35;
+
+  color: #d5d9df;
+}
+
+.classroom:last-child {
+  border-bottom: none;
+}
+
+/* Total alunos */
+
+.info p {
+  color: #ff8500;
+
+  font-weight: bold;
+}
+
+/* Arquivos */
+
+.files {
+  display: flex;
+
+  gap: 20px;
+}
+
+.files span {
+  background: #151b22;
+
+  border: 1px solid #27313b;
+
+  border-radius: 10px;
+
+  padding: 10px 15px;
+
+  color: #ffffff;
+}
+
+/* Botão */
+
+.button {
+  margin-top: 20px;
+
+  width: 100%;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  border: 1px solid #ff8500;
+
+  background: transparent;
+
+  color: #ff8500;
+
+  font-weight: bold;
+
+  cursor: pointer;
+
+  transition: 0.3s;
+}
+
+.button:hover {
+  background: #ff8500;
+
+  color: #111;
+}
+
+.classroomHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.classroomHeader strong {
+  font-size: 16px;
+  font-weight: 600;
+}

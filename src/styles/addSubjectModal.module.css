@@ -1,0 +1,163 @@
+.overlay {
+  position: fixed;
+
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  backdrop-filter: blur(8px);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  z-index: 1000;
+}
+
+.modal {
+  background: #151b22;
+
+  border-radius: 18px;
+
+  border: 1px solid #27313b;
+
+  padding: 25px;
+
+  width: 420px;
+
+  color: white;
+}
+
+.modal h2 {
+  font-size: 24px;
+
+  font-weight: bold;
+
+  margin-bottom: 20px;
+}
+
+.modal input,
+.modal textarea,
+.modal select {
+  width: 100%;
+
+  background: #202832;
+
+  border: 1px solid #27313b;
+
+  border-radius: 8px;
+
+  padding: 12px;
+
+  margin-bottom: 15px;
+
+  color: white;
+
+  outline: none;
+
+  font-size: 14px;
+}
+
+.modal input:focus,
+.modal textarea:focus,
+.modal select:focus {
+  border-color: #ff7a00;
+
+  box-shadow: 0 0 0 2px rgba(255, 122, 0, 0.15);
+}
+
+.modal textarea {
+  height: 100px;
+
+  resize: none;
+}
+
+.actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 25px;
+}
+
+.actions button {
+  padding: 10px 18px;
+
+  border-radius: 10px;
+
+  border: none;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  font-size: 14px;
+
+  transition: 0.2s ease;
+
+  color: white;
+}
+
+/* Botão cancelar */
+
+.actions button:first-child {
+  background: #27313b;
+
+  border: 1px solid #364452;
+}
+
+.actions button:first-child:hover {
+  background: #364452;
+}
+
+/* Botão salvar/adicionar */
+
+.actions button:last-child {
+  background: #ff7a00;
+
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.25);
+}
+
+.actions button:last-child:hover {
+  background: #ff8c26;
+
+  transform: translateY(-1px);
+}
+
+/* Botões internos do modal */
+
+.modal button {
+  padding: 10px 18px;
+
+  border-radius: 10px;
+
+  border: none;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  font-size: 14px;
+
+  color: white;
+
+  transition: 0.2s ease;
+}
+
+/* Botão adicionar turma */
+
+.modal button:not(.actions button) {
+  background: #ff7a00;
+
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.25);
+}
+
+.modal button:not(.actions button):hover {
+  background: #ff8c26;
+
+  transform: translateY(-1px);
+}

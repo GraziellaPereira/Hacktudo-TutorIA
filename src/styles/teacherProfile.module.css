@@ -1,0 +1,93 @@
+.profile {
+  background: #151b22;
+
+  border-radius: 18px;
+
+  border: 1px solid #27313b;
+
+  padding: 25px;
+
+  color: white;
+}
+
+.name {
+  font-size: 24px;
+
+  font-weight: bold;
+
+  color: white;
+}
+
+.description {
+  color: #ffffff;
+
+  line-height: 1.5;
+}
+
+.summary {
+  margin-top: 25px;
+
+  padding-top: 20px;
+
+  border-top: 1px solid #27313b;
+
+  color: white;
+}
+
+.summaryItem {
+  margin-bottom: 10px;
+
+  color: white;
+}
+
+.actions {
+  display: flex;
+
+  gap: 10px;
+
+  margin-top: 25px;
+}
+
+.button {
+  padding: 10px 15px;
+
+  border-radius: 8px;
+
+  border: none;
+
+  cursor: pointer;
+
+  color: white;
+
+  font-weight: 600;
+}
+
+/* Botão cancelar */
+
+.actions button:first-child {
+  background: #27313b;
+
+  border: 1px solid #364452;
+
+  color: white;
+}
+
+.actions button:first-child:hover {
+  background: #364452;
+}
+
+/* Botão salvar/adicionar */
+
+.actions button:last-child {
+  background: #ff7a00;
+
+  box-shadow: 0 4px 12px rgba(255, 122, 0, 0.25);
+
+  color: white;
+}
+
+.actions button:last-child:hover {
+  background: #ff8c26;
+
+  transform: translateY(-1px);
+}

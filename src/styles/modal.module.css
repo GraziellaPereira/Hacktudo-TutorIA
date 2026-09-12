@@ -1,0 +1,1236 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 40px;
+}
+
+/* ==========================
+   MODAL PRINCIPAL
+========================== */
+
+.modal {
+  background: #151b22;
+
+  border: 1px solid #27313b;
+
+  border-radius: 18px;
+
+  padding: 25px;
+
+  width: 420px;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  color: white;
+
+  box-sizing: border-box;
+}
+
+.modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: #364452;
+
+  border-radius: 10px;
+}
+
+.modalHeader {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 15px;
+}
+
+.modalHeader h2 {
+  margin: 0;
+
+  font-size: 24px;
+}
+
+.modalHeader button {
+  width: 35px;
+
+  height: 35px;
+
+  border-radius: 8px;
+
+  background: #27313b;
+
+  color: white;
+
+  border: none;
+
+  cursor: pointer;
+}
+
+.modalHeader button:hover {
+  background: #ff7a00;
+}
+
+.settingsButton {
+  background: none;
+
+  border: none;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 20px;
+}
+
+.settingsButton span {
+  display: inline-block;
+
+  transition: 0.2s;
+}
+
+.settingsButton:hover span {
+  transform: rotate(25deg);
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  background: #202832;
+
+  border: 1px solid #27313b;
+
+  border-radius: 8px;
+
+  padding: 12px;
+
+  color: white;
+}
+
+.modal textarea {
+  height: 100px;
+
+  resize: none;
+}
+
+.info {
+  margin-bottom: 12px;
+}
+
+.classroomItem {
+  display: flex;
+
+  justify-content: space-between;
+
+  background: #202832;
+
+  padding: 10px;
+
+  border-radius: 8px;
+
+  margin-bottom: 8px;
+}
+
+.addSection {
+  margin-top: 15px;
+}
+
+.addSection input {
+  margin-bottom: 10px;
+}
+
+.addButton {
+  width: 100%;
+
+  padding: 10px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #ff7a00;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-weight: 600;
+}
+
+.total {
+  margin-top: 15px;
+
+  padding-top: 10px;
+
+  border-top: 1px solid #27313b;
+}
+
+.actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  margin-top: 20px;
+}
+
+.actions button {
+  padding: 10px 18px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  color: white;
+
+  font-weight: 600;
+}
+
+.actions button:first-child {
+  background: #27313b;
+}
+
+.actions button:last-child {
+  background: #ff7a00;
+}
+
+/* ==========================
+   MODAL GERENCIAMENTO
+========================== */
+
+.managerModal {
+  width: 70vw;
+
+  height: 70vh;
+
+  max-width: 1100px;
+
+  background: #151b22;
+
+  border: 1px solid #27313b;
+
+  border-radius: 20px;
+
+  color: white;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+}
+
+/* HEADER */
+
+.managerHeader {
+  height: 70px;
+
+  padding: 0 25px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  border-bottom: 1px solid #27313b;
+
+  flex-shrink: 0;
+}
+
+.managerHeader h2 {
+  margin: 0;
+
+  font-size: 22px;
+}
+
+.managerHeader button {
+  width: 34px;
+
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 8px;
+
+  border: none;
+
+  background: #27313b;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 16px;
+}
+
+.managerHeader button:hover {
+  background: #ff7a00;
+}
+
+.managerContent {
+  display: flex;
+
+  flex: 1;
+
+  min-height: 0;
+
+  overflow: hidden;
+}
+
+/* ==========================
+   LISTA ESQUERDA
+========================== */
+
+.managerLeft {
+  width: 32%;
+
+  padding: 25px;
+
+  background: #11171d;
+
+  border-right: 1px solid #27313b;
+
+  overflow-y: auto;
+}
+
+.managerLeft h3 {
+  margin-top: 0;
+
+  font-size: 18px;
+}
+
+.managerLeft table {
+  width: 100%;
+
+  border-collapse: separate;
+
+  border-spacing: 0 8px;
+}
+
+.managerLeft tr {
+  background: #202832;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.managerLeft tr:hover {
+  transform: translateX(4px);
+}
+
+.managerLeft td {
+  padding: 14px;
+}
+
+.managerLeft td:first-child {
+  border-radius: 10px 0 0 10px;
+
+  font-weight: 600;
+}
+
+.managerLeft td:last-child {
+  border-radius: 0 10px 10px 0;
+
+  text-align: right;
+
+  color: #aaa;
+}
+
+/* ==========================
+   EDITOR
+========================== */
+
+.managerRight {
+  flex: 1;
+
+  padding: 30px;
+
+  overflow-y: auto;
+}
+
+.managerRight h3 {
+  margin-top: 0;
+
+  font-size: 22px;
+}
+
+.managerRight label {
+  display: block;
+
+  color: #b9c0c8;
+
+  margin-top: 18px;
+
+  margin-bottom: 7px;
+}
+
+.managerRight input,
+.managerRight textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  background: #202832;
+
+  border: 1px solid #27313b;
+
+  border-radius: 10px;
+
+  padding: 12px;
+
+  color: white;
+}
+
+.managerRight textarea {
+  min-height: 120px;
+
+  resize: none;
+}
+
+.managerRight h4 {
+  margin-top: 25px;
+}
+
+/* CHECKBOX */
+
+.managerRight label:has(input[type='checkbox']) {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  background: #202832;
+
+  padding: 10px 14px;
+
+  border-radius: 20px;
+
+  margin-right: 8px;
+
+  cursor: pointer;
+}
+
+.managerRight input[type='checkbox'] {
+  width: auto;
+}
+
+/* BOTÃO */
+
+.managerRight button {
+  margin-top: 25px;
+
+  width: 100%;
+
+  padding: 13px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #ff7a00;
+
+  color: white;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.managerRight button:hover {
+  background: #ff8c26;
+}
+
+.emptyArea {
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-direction: column;
+
+  color: #777;
+
+  font-size: 18px;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 1000;
+  padding: 40px;
+}
+
+/* ==========================
+   MODAL PRINCIPAL
+========================== */
+
+.modal {
+  background: #151b22;
+
+  border: 1px solid #27313b;
+
+  border-radius: 18px;
+
+  padding: 25px;
+
+  width: 420px;
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  color: white;
+
+  box-sizing: border-box;
+}
+
+.modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: #364452;
+
+  border-radius: 10px;
+}
+
+.modalHeader {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-bottom: 15px;
+}
+
+.modalHeader h2 {
+  margin: 0;
+
+  font-size: 24px;
+}
+
+.modalHeader button {
+  width: 35px;
+
+  height: 35px;
+
+  border-radius: 8px;
+
+  background: #27313b;
+
+  color: white;
+
+  border: none;
+
+  cursor: pointer;
+}
+
+.modalHeader button:hover {
+  background: #ff7a00;
+}
+
+.settingsButton {
+  background: none;
+
+  border: none;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 20px;
+}
+
+.settingsButton span {
+  display: inline-block;
+
+  transition: 0.2s;
+}
+
+.settingsButton:hover span {
+  transform: rotate(25deg);
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  background: #202832;
+
+  border: 1px solid #27313b;
+
+  border-radius: 8px;
+
+  padding: 12px;
+
+  color: white;
+}
+
+.modal textarea {
+  height: 100px;
+
+  resize: none;
+}
+
+.info {
+  margin-bottom: 12px;
+}
+
+.classroomItem {
+  display: flex;
+
+  justify-content: space-between;
+
+  background: #202832;
+
+  padding: 10px;
+
+  border-radius: 8px;
+
+  margin-bottom: 8px;
+}
+
+/* ==========================
+   TABELA DE MATÉRIAS
+========================== */
+
+.subjectTable {
+  width: 70%;
+
+  margin: 15px auto;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.subjectRow {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  background: #202832;
+
+  border: 1px solid #34414f;
+
+  border-radius: 8px;
+
+  padding: 8px 12px;
+
+  min-height: 38px;
+}
+
+.subjectRow span {
+  color: white;
+
+  font-size: 14px;
+}
+
+/* botão X pequeno da matéria */
+
+.removeSubject {
+  width: 22px !important;
+
+  height: 22px !important;
+
+  min-width: 22px;
+
+  padding: 0 !important;
+
+  margin: 0 !important;
+
+  border-radius: 50%;
+
+  border: none;
+
+  background: #27313b !important;
+
+  color: #ff6b6b;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: bold;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.removeSubject:hover {
+  background: #ff7a00 !important;
+
+  color: white;
+}
+
+/* ==========================
+   GERENCIAMENTO
+========================== */
+
+.managerModal {
+  width: 70vw;
+
+  height: 70vh;
+
+  max-width: 1100px;
+
+  background: #151b22;
+
+  border: 1px solid #27313b;
+
+  border-radius: 20px;
+
+  color: white;
+
+  display: flex;
+
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.managerHeader {
+  height: 70px;
+
+  padding: 0 25px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  border-bottom: 1px solid #27313b;
+}
+
+.managerHeader h2 {
+  margin: 0;
+
+  font-size: 22px;
+}
+
+.managerHeader button {
+  width: 34px;
+
+  height: 34px;
+
+  border-radius: 8px;
+
+  border: none;
+
+  background: #27313b;
+
+  color: white;
+
+  cursor: pointer;
+}
+
+.managerHeader button:hover {
+  background: #ff7a00;
+}
+
+.managerContent {
+  display: flex;
+
+  flex: 1;
+
+  overflow: hidden;
+}
+
+/* ==========================
+   LISTA ESQUERDA
+========================== */
+
+.managerLeft {
+  width: 32%;
+
+  padding: 25px;
+
+  background: #11171d;
+
+  border-right: 1px solid #27313b;
+
+  overflow-y: auto;
+}
+
+.managerLeft h3 {
+  margin-top: 0;
+}
+
+.managerLeft table {
+  width: 100%;
+
+  border-collapse: separate;
+
+  border-spacing: 0 8px;
+}
+
+.managerLeft tr {
+  background: #202832;
+
+  cursor: pointer;
+}
+
+.managerLeft tr:hover {
+  transform: translateX(4px);
+}
+
+.managerLeft td {
+  padding: 14px;
+}
+
+.managerLeft td:first-child {
+  border-radius: 10px 0 0 10px;
+}
+
+.managerLeft td:last-child {
+  border-radius: 0 10px 10px 0;
+
+  text-align: right;
+
+  color: #aaa;
+}
+
+/* ==========================
+   EDITOR
+========================== */
+
+.managerRight {
+  flex: 1;
+
+  padding: 30px;
+
+  overflow-y: auto;
+}
+
+.managerRight h3 {
+  margin-top: 0;
+
+  font-size: 22px;
+}
+
+.managerRight label {
+  display: block;
+
+  color: #b9c0c8;
+
+  margin-top: 18px;
+
+  margin-bottom: 7px;
+}
+
+.managerRight input,
+.managerRight textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  background: #202832;
+
+  border: 1px solid #27313b;
+
+  border-radius: 10px;
+
+  padding: 12px;
+
+  color: white;
+}
+
+.managerRight textarea {
+  min-height: 120px;
+
+  resize: none;
+}
+
+.managerRight h4 {
+  margin-top: 25px;
+}
+
+/* CHECKBOX ENSINO */
+
+.managerRight label:has(input[type='checkbox']) {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  background: #202832;
+
+  padding: 10px 14px;
+
+  border-radius: 20px;
+
+  margin-right: 8px;
+
+  cursor: pointer;
+}
+
+.managerRight input[type='checkbox'] {
+  width: auto;
+}
+
+/* BOTÕES */
+
+.managerRight button {
+  margin-top: 25px;
+
+  width: 100%;
+
+  padding: 13px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #ff7a00;
+
+  color: white;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.managerRight button:hover {
+  background: #ff8c26;
+}
+
+.emptyArea {
+  height: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #777;
+
+  font-size: 18px;
+}
+
+/* ==========================
+   BOTÃO ADICIONAR TURMA
+========================== */
+
+.addClassroomButton {
+  background: #ff7a00;
+
+  color: white;
+
+  border: none;
+
+  padding: 10px 14px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 6px;
+}
+
+.addClassroomButton:hover {
+  background: #ff8f2b;
+
+  transform: translateY(-1px);
+}
+
+.addClassroomButton:active {
+  transform: scale(0.97);
+}
+
+.managerTitle {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-bottom: 15px;
+}
+
+.managerTitle h3 {
+  margin: 0;
+
+  font-size: 18px;
+}
+
+/* ==========================
+   INFORMAÇÕES DO CONTEÚDO
+========================== */
+
+.contentInfo {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+
+  background: #10151b;
+
+  border: 1px solid #27313b;
+
+  border-radius: 12px;
+
+  padding: 14px;
+
+  margin-bottom: 15px;
+
+  color: #cbd5e1;
+
+  font-size: 14px;
+}
+
+.contentInfo span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+}
+
+/* ==========================
+   TITULO + BOTÃO
+========================== */
+
+.managerTitle {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 15px;
+}
+
+.managerTitle h3 {
+  margin: 0;
+
+  font-size: 18px;
+}
+
+/* ==========================
+   BOTÃO IMPORTAR
+========================== */
+
+.uploadButton {
+  background: #ff7a00;
+
+  color: white;
+
+  border: none;
+
+  padding: 9px 14px;
+
+  border-radius: 10px;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.uploadButton:hover {
+  background: #ff9233;
+
+  transform: translateY(-1px);
+}
+
+/* ==========================
+   LISTA DE ARQUIVOS
+========================== */
+
+.classroomItem {
+  background: #151b22;
+
+  border: 1px solid #27313b;
+
+  border-radius: 10px;
+
+  padding: 12px;
+
+  margin-bottom: 8px;
+
+  cursor: pointer;
+
+  color: #dbe4ee;
+
+  transition: 0.2s;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.classroomItem:hover {
+  border-color: #ff7a00;
+
+  background: #1c242d;
+}
+
+.classroomItemSelected {
+  background: #ff7a00;
+
+  color: white;
+
+  border: 1px solid #ff7a00;
+
+  border-radius: 10px;
+
+  padding: 12px;
+
+  margin-bottom: 8px;
+
+  cursor: pointer;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+/* ==========================
+   DETALHES DO ARQUIVO
+========================== */
+
+.managerRight {
+  background: #10151b;
+
+  border-radius: 14px;
+
+  border: 1px solid #27313b;
+
+  padding: 20px;
+}
+
+.managerRight h3 {
+  margin-top: 0;
+
+  margin-bottom: 20px;
+}
+
+.managerRight p {
+  background: #151b22;
+
+  padding: 10px;
+
+  border-radius: 8px;
+
+  border: 1px solid #27313b;
+
+  color: #dbe4ee;
+}
+
+.managerRight button {
+  width: 100%;
+
+  margin-top: 15px;
+
+  background: #ff7a00;
+
+  color: white;
+
+  border: none;
+
+  padding: 12px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  font-weight: 600;
+
+  transition: 0.2s;
+}
+
+.managerRight button:hover {
+  background: #ff9233;
+}
+
+/* ==========================
+   ÁREA VAZIA
+========================== */
+
+.emptyArea {
+  height: 100%;
+
+  min-height: 150px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #94a3b8;
+
+  border: 1px dashed #364452;
+
+  border-radius: 12px;
+
+  padding: 20px;
+}
