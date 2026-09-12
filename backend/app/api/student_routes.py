@@ -14,8 +14,11 @@ from app.storage.student_repository import (
 )
 
 from app.storage.student_content_repository import (
+    create_student_content,
     get_student_contents
 )
+
+from app.storage.activity_repository import get_approved_activities_by_content
 
 from app.storage.content_repository import (
     get_content,
@@ -146,6 +149,47 @@ def student_contents(
     return get_student_contents(
         student_id
     )
+
+
+@router.post("/{student_id}/contents/{content_id}")
+def add_student_content(student_id: str, content_id: str):
+    if not get_student(student_id):
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+
+    content = get_content(content_id)
+    if not content:
+        raise HTTPException(status_code=404, detail="Conteúdo não encontrado")
+
+    if content.get("review_status") != "approved":
+        raise HTTPException(
+            status_code=409,
+            detail="Este conteúdo ainda não foi publicado pelo professor",
+        )
+
+    if any(item["id"] == content_id for item in get_student_contents(student_id)):
+        return content
+
+    create_student_content(student_id, content_id)
+    return content
+
+
+@router.get("/{student_id}/contents/{content_id}")
+def student_content_detail(student_id: str, content_id: str):
+    if not get_student(student_id):
+        raise HTTPException(status_code=404, detail="Aluno não encontrado")
+
+    if not any(item["id"] == content_id for item in get_student_contents(student_id)):
+        raise HTTPException(status_code=403, detail="Aluno não possui acesso a este conteúdo")
+
+    content = get_content(content_id)
+    if not content:
+        raise HTTPException(status_code=404, detail="Conteúdo não encontrado")
+
+    return {
+        "content": content,
+        "topics": get_content_topics(content_id),
+        "activities": get_approved_activities_by_content(content_id),
+    }
 
 # ==================================================
 # Gerar / consultar resumo do conteúdo

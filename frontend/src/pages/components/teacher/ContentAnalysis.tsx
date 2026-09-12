@@ -104,6 +104,14 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
         <span className={styles.status}>{analysis.review_status}</span>
       </header>
 
+      <div className={styles.contentCode}>
+        <span>Código para compartilhar com o aluno</span>
+        <strong>{analysis.content_id}</strong>
+        <button type="button" onClick={() => navigator.clipboard.writeText(analysis.content_id)}>
+          Copiar código
+        </button>
+      </div>
+
       <div className={styles.section}>
         <h2>Resumo</h2>
         <p>{analysis.summary || 'Resumo não disponível.'}</p>
