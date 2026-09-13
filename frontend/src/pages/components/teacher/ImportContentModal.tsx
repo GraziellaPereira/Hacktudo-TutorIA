@@ -48,6 +48,12 @@ export default function ImportContentModal({ content, onClose, onSuccess }: any)
 
         assessmentFocus: classroom.questionFocus ? [classroom.questionFocus] : [],
 
+        contextId: content.context?.id,
+
+        classroomId: classroom.id ? String(classroom.id) : undefined,
+
+        subjectId: typeof subject === 'object' && subject?.id ? String(subject.id) : undefined,
+
         file,
       });
 
@@ -124,12 +130,20 @@ export default function ImportContentModal({ content, onClose, onSuccess }: any)
           <label>Arquivo *</label>
 
           <input
+            id="content-file"
+            className={styles.fileInput}
             type="file"
-
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
 
+          <label className={styles.filePicker} htmlFor="content-file">
+            <span className={styles.filePickerButton}>Escolher arquivo</span>
+
+            <span className={styles.fileName}>{file?.name ?? 'Nenhum arquivo selecionado'}</span>
+          </label>
+
           <button
+            className={styles.saveContentButton}
             onClick={handleSave}
 
             disabled={loading}

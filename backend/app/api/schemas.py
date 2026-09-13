@@ -18,6 +18,15 @@ class ActivityReviewRequest(BaseModel):
 
     hints: Optional[list[str]] = None
 
+
+class TopicUpdateRequest(BaseModel):
+    id: str
+    name: str
+    description: str = ""
+    learning_objectives: list[str] = []
+    concepts: list[str] = []
+    practical_applications: list[str] = []
+
 class StudentCreateRequest(BaseModel):
 
     name: str
@@ -33,6 +42,12 @@ class TeacherCreateRequest(BaseModel):
     email: str | None = None
 
 
+class TeacherUpdateRequest(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    email: str | None = None
+
+
 class ContextCreateRequest(BaseModel):
     name: str
     description: str = ""
@@ -41,3 +56,9 @@ class ContextCreateRequest(BaseModel):
 class ContextStructureUpdateRequest(BaseModel):
     classrooms: list = []
     subjects: list = []
+
+
+class ContentUpdateRequest(BaseModel):
+    title: str | None = None
+    summary: str | None = None
+    topics: list[TopicUpdateRequest] | None = None

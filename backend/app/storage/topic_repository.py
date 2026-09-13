@@ -115,3 +115,32 @@ def get_content_topics(content_id):
         topics.append(topic)
 
     return topics
+
+
+def update_topic(
+    topic_id: str,
+    name: str,
+    description: str,
+    learning_objectives: list[str],
+    concepts: list[str],
+    practical_applications: list[str] | None = None,
+):
+    with connection_scope() as connection:
+        connection.execute(
+            """
+            UPDATE topics
+            SET name = ?, description = ?, learning_objectives = ?,
+                concepts = ?, practical_applications = ?
+            WHERE id = ?
+            """,
+            (
+                name,
+                description,
+                json.dumps(learning_objectives, ensure_ascii=False),
+                json.dumps(concepts, ensure_ascii=False),
+                json.dumps(practical_applications or [], ensure_ascii=False),
+                topic_id,
+            ),
+        )
+
+    return get_topic(topic_id)

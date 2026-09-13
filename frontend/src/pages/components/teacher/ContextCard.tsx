@@ -44,58 +44,44 @@ export default function ContextCard({
 
         {context.classrooms && context.classrooms.length > 0 ? (
           context.classrooms.map((classroom: any) => (
-            <div
+            <button
               key={classroom.id}
 
-              className={styles.classroom}
+              className={styles.classroomCard}
+
+              type="button"
+
+              onClick={() => {
+                onOpenFiles({
+                  teacher,
+
+                  subject: classroom.subjects?.[0] ?? '',
+
+                  classroom,
+
+                  context,
+                });
+              }}
             >
-              <div className={styles.classroomHeader}>
+              <span className={styles.classroomCardIcon}>🏫</span>
+
+              <span className={styles.classroomCardContent}>
                 <strong>
-                  🏫 {classroom.name}
+                  {classroom.name}
                   {classroom.year ? ` - ${classroom.year}` : ''}
                 </strong>
-              </div>
 
-              <div className={styles.subjectList}>
-                <h4>Matérias</h4>
+                <span>
+                  {classroom.subjects?.length
+                    ? `${classroom.subjects.length} matéria${classroom.subjects.length > 1 ? 's' : ''}`
+                    : 'Nenhuma matéria cadastrada'}
+                </span>
+              </span>
 
-                {classroom.subjects && classroom.subjects.length > 0 ? (
-                  classroom.subjects.map((subject: any) => (
-                    <div
-                      key={subject.id ?? subject}
-
-                      className={styles.subjectRow}
-                    >
-                      <span>📖 {subject.name ?? subject}</span>
-
-                      <button
-                        className={styles.fileButton}
-
-                        onClick={() => {
-                          const content = {
-                            teacher,
-
-                            subject,
-
-                            classroom,
-
-                            context,
-                          };
-
-                          console.log('ABRIR ARQUIVOS:', content);
-
-                          onOpenFiles(content);
-                        }}
-                      >
-                        📂 Arquivos
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <p>Nenhuma matéria cadastrada</p>
-                )}
-              </div>
-            </div>
+              <span className={styles.classroomCardArrow} aria-hidden="true">
+                →
+              </span>
+            </button>
           ))
         ) : (
           <p>Nenhuma turma cadastrada</p>

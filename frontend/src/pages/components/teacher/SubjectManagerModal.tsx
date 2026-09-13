@@ -54,9 +54,18 @@ export default function SubjectManagerModal({ subject, onClose, onUpdate }: any)
       return;
     }
 
+    const teacherId = localStorage.getItem('teacher_id');
+    const contextId = currentSubject.contextId;
+
+    if (!teacherId || typeof contextId !== 'string') {
+      alert('Não foi possível identificar o professor ou contexto da matéria.');
+      return;
+    }
+
     const payload = {
       id: currentSubject.id,
-
+      teacherId,
+      contextId,
       classrooms: currentSubject.classrooms ?? classrooms,
     };
 

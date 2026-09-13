@@ -3,11 +3,21 @@ import time
 from uuid import uuid4
 
 from dotenv import load_dotenv
+import random
 from google import genai
 from google.genai import errors, types
 from pydantic import ValidationError
 
 from app.model.activity import ActivitySet
+
+
+ASSESSMENT_ACTIVITY_COUNT = 5
+
+
+def select_assessment_activities(activities, count=ASSESSMENT_ACTIVITY_COUNT):
+  if len(activities) <= count:
+    return list(activities)
+  return random.sample(activities, count)
 
 
 load_dotenv()

@@ -8,12 +8,27 @@ from app.storage.activity_repository import create_activity, get_content_activit
 
 
 
-def process_teacher_content(teacher_id, title, text, context):
+def process_teacher_content(
+    teacher_id,
+    title,
+    text,
+    context,
+    context_id=None,
+    classroom_id=None,
+    subject_id=None,
+    attachment_path=None,
+    attachment_name=None,
+):
     content_id = create_content(
         teacher_id=teacher_id,
         title=title,
         original_text=text,
         context=context,
+        context_id=context_id,
+        classroom_id=classroom_id,
+        subject_id=subject_id,
+        attachment_path=attachment_path,
+        attachment_name=attachment_name,
     )
 
     analyzed_content = analyze_content(text, context)
@@ -67,6 +82,9 @@ def generate_content_activities(content_id, context):
                 validation_score=validation.score,
                 validation_warnings=validation.warnings,
             )
-            generated_activities.append({**activity.model_dump(), "activity_id": activity_id})
+            generated_activity = activity.model_dump()
+            generated_activity.pop("activity_id", None)
+            generated_activity["id"] = activity_id
+            generated_activities.append(generated_activity)
 
     return generated_activities

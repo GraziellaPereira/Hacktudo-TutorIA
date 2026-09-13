@@ -5,6 +5,37 @@
   color: #f3f6f8;
 }
 
+.backToTeacherButton {
+  display: block;
+  width: fit-content;
+  min-height: 40px;
+  margin: 0 auto 18px;
+  padding: 9px 15px;
+  border: 1px solid #ff8500;
+  border-radius: 8px;
+  background: transparent;
+  color: #ffb15c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.backToTeacherButton:hover {
+  background: #ff8500;
+  color: #151b22;
+  transform: translateY(-1px);
+}
+
+.backToTeacherButton:focus-visible {
+  outline: 2px solid #f5a524;
+  outline-offset: 2px;
+}
+
 .panel {
   max-width: 980px;
   margin: 0 auto;
@@ -236,6 +267,37 @@
   line-height: 1.6;
 }
 
+.contentEditor,
+.contentTitleEditor {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid #465463;
+
+  border-radius: 8px;
+
+  background: #10151b;
+
+  color: #f7f9fb;
+
+  font: inherit;
+
+  padding: 12px;
+}
+
+.contentEditor {
+  min-height: 120px;
+
+  resize: vertical;
+}
+
+.contentTitleEditor {
+  flex: 1;
+
+  min-width: 220px;
+}
+
 .questionEditor {
   min-height: 130px;
   padding: 12px;
@@ -261,6 +323,71 @@
   border-top: 1px solid #2b3945;
 }
 
+.modalButton {
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #f7f9fb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.modalButton:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.modalButton:focus-visible {
+  outline: 2px solid #f5a524;
+  outline-offset: 2px;
+}
+
+.modalButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.modalEditButton {
+  border-color: #536575;
+  background: #263541;
+}
+
+.modalEditButton:not(:disabled):hover {
+  border-color: #91a5b5;
+  background: #314453;
+}
+
+.modalApproveButton,
+.modalSaveButton {
+  border-color: #1fa875;
+  background: #17845b;
+}
+
+.modalApproveButton:not(:disabled):hover,
+.modalSaveButton:not(:disabled):hover {
+  border-color: #42d49b;
+  background: #1d9c6d;
+}
+
+.modalRegenerateButton {
+  border-color: #8c6b2b;
+  background: #4b3b20;
+  color: #f5d98a;
+}
+
+.modalRegenerateButton:not(:disabled):hover {
+  border-color: #d2a947;
+  background: #624b24;
+  color: #fff0bd;
+}
+
 @media (max-width: 640px) {
   .page {
     padding: 24px 12px;
@@ -279,5 +406,13 @@
   .columns {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+
+  .modalActions {
+    justify-content: stretch;
+  }
+
+  .modalButton {
+    flex: 1 1 140px;
   }
 }

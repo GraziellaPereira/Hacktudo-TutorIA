@@ -8,88 +8,61 @@ from app.model.context import LearningContext
 
 
 def create_content(
-
     teacher_id,
-
     title,
-
     original_text,
-
-    context
-
+    context,
+    context_id: str | None = None,
+    classroom_id: str | None = None,
+    subject_id: str | None = None,
+    attachment_path: str | None = None,
+    attachment_name: str | None = None,
 ):
-
     content_id = str(uuid.uuid4())
-
     created_at = datetime.now().isoformat()
 
-
     with connection_scope() as connection:
-
         connection.execute(
-
             """
             INSERT INTO contents (
-
                 id,
-
                 teacher_id,
-
+                context_id,
+                classroom_id,
+                subject_id,
+                attachment_path,
+                attachment_name,
                 title,
-
                 original_text,
-
                 subject,
-
                 education_level,
-
                 grade_or_period,
-
                 target_audience,
-
                 learning_goal,
-
                 assessment_focus,
-
                 created_at
-
             )
-
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-
             (
-
                 content_id,
-
                 teacher_id,
-
+                context_id,
+                classroom_id,
+                subject_id,
+                attachment_path,
+                attachment_name,
                 title,
-
                 original_text,
-
                 context.subject,
-
                 context.education_level,
-
                 context.grade_or_period,
-
                 context.target_audience,
-
                 context.learning_goal,
-
-                json.dumps(
-                    context.assessment_focus,
-                    ensure_ascii=False
-                ),
-
-                created_at
-
-            )
-
+                json.dumps(context.assessment_focus, ensure_ascii=False),
+                created_at,
+            ),
         )
-
 
     return content_id
 
@@ -261,4 +234,28 @@ def update_content_summary(
                 ),
                 content_id
             )
+        )
+
+
+def update_content(content_id: str, title: str | None, summary: str | None) -> None:
+    updates = []
+    values = []
+
+    if title is not None:
+        updates.append('title = ?')
+        values.append(title)
+
+    if summary is not None:
+        updates.append('summary = ?')
+        values.append(summary)
+
+    if not updates:
+        return
+
+    values.append(content_id)
+
+    with connection_scope() as connection:
+        connection.execute(
+            f"UPDATE contents SET {', '.join(updates)} WHERE id = ?",
+            values,
         )

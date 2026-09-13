@@ -19,39 +19,40 @@ export default function TeacherProfile({
 }: TeacherProfileProps) {
   const contexts = teacher.contexts ?? [];
 
-  const totalSubjects = contexts.reduce(
-    (total: any, context: any) => total + (context.subjects?.length ?? 0),
-
-    0,
-  );
-
-  const totalClassrooms = contexts.reduce(
-    (total: any, context: any) =>
-      total +
-      context.subjects.reduce(
-        (subjectTotal: any, subject: any) => subjectTotal + subject.classrooms.length,
-
-        0,
-      ),
-
-    0,
-  );
-
-  const totalStudents = contexts.reduce(
-    (total: any, context: any) =>
-      total +
-      context.subjects.reduce(
-        (subjectTotal: any, subject: any) =>
-          subjectTotal +
-          subject.classrooms.reduce(
-            (classTotal: any, classroom: any) => classTotal + classroom.studentsCount,
-
-            0,
+  const subjects = Array.from(
+    new Map(
+      contexts
+        .flatMap((context: any) => [
+          ...(Array.isArray(context.subjects) ? context.subjects : []),
+          ...(Array.isArray(context.classrooms) ? context.classrooms : []).flatMap(
+            (classroom: any) => (Array.isArray(classroom.subjects) ? classroom.subjects : []),
           ),
+        ])
+        .map((subject: any, index: number) => [
+          String(subject.id ?? `${subject.name ?? 'subject'}-${index}`),
+          subject,
+        ]),
+    ).values(),
+  );
 
-        0,
-      ),
+  const classrooms = Array.from(
+    new Map(
+      contexts
+        .flatMap((context: any) => [
+          ...(Array.isArray(context.classrooms) ? context.classrooms : []),
+          ...subjects.flatMap((subject: any) =>
+            Array.isArray(subject.classrooms) ? subject.classrooms : [],
+          ),
+        ])
+        .map((classroom: any, index: number) => [
+          String(classroom.id ?? `${classroom.name ?? 'classroom'}-${index}`),
+          classroom,
+        ]),
+    ).values(),
+  );
 
+  const totalStudents = classrooms.reduce(
+    (total: number, classroom: any) => total + Number(classroom.studentsCount ?? 0),
     0,
   );
 
@@ -64,9 +65,9 @@ export default function TeacherProfile({
       <div className={styles.summary}>
         <h2>Resumo</h2>
 
-        <div className={styles.summaryItem}>📚 Matérias: {totalSubjects}</div>
+        <div className={styles.summaryItem}>📚 Matérias: {subjects.length}</div>
 
-        <div className={styles.summaryItem}>🏫 Turmas/Ano: {totalClassrooms}</div>
+        <div className={styles.summaryItem}>🏫 Turmas/Ano: {classrooms.length}</div>
 
         <div className={styles.summaryItem}>👥 Alunos: {totalStudents}</div>
       </div>

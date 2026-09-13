@@ -5,10 +5,12 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
+from google.genai import errors
 
 import app.database.database as database
 from app.api.app import app
 from app.model.context import LearningContext
+from app.model.activity import Activity, ActivitySet
 from app.model.learning_material import Flashcard, LearningMaterial
 from app.storage.content_repository import create_content
 from app.storage.recommendation_repository import create_recommendation
@@ -88,6 +90,37 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(
             self.client.get(f"/students/{self.student_id}").json()["id"],
             self.student_id,
+        )
+
+    def test_context_update_accepts_string_subjects_from_teacher_modal(self):
+        context = self.client.post(
+            f"/teachers/{self.teacher_id}/contexts",
+            json={"name": "Turmas", "description": "Contexto de teste"},
+        ).json()
+
+        response = self.client.put(
+            f"/teachers/{self.teacher_id}/contexts/{context['id']}",
+            json={
+                "classrooms": [
+                    {
+                        "id": 123,
+                        "name": "Nova turma",
+                        "year": "2026",
+                        "educationLevels": ["Faculdade"],
+                        "subjects": ["Matematica"],
+                        "learningObjective": "Aprender",
+                        "questionFocus": "Aplicacao",
+                        "studentsCount": 10,
+                    }
+                ],
+                "subjects": [],
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()["classrooms"][0]["subjects"][0]["name"],
+            "Matematica",
         )
 
     def test_teacher_upload_route_forwards_form_and_file(self):
@@ -216,6 +249,25 @@ class ApiTestCase(unittest.TestCase):
         )
         self.assertEqual(attempt.status_code, 200)
 
+        generated_activities = ActivitySet(
+            activities=[
+                Activity(
+                    topic="Funcoes",
+                    learning_objective="Identificar dominio",
+                    type="multiple_choice",
+                    difficulty=[1, 3, 4, 3, 3][index],
+                    cognitive_skill="application",
+                    learning_dimension="application",
+                    question=f"Questao adaptativa {index}",
+                    options=["A", "B", "C", "D"],
+                    correct_answer="A",
+                    explanation="A alternativa A aplica o conceito.",
+                    hints=["Observe o dominio.", "Relacione os conjuntos.", "Escolha A."],
+                )
+                for index in range(5)
+            ]
+        )
+
         with patch(
             "app.services.adaptive_learning_service.generate_learning_material",
             return_value=LearningMaterial(
@@ -234,6 +286,9 @@ class ApiTestCase(unittest.TestCase):
                     for index in range(8)
                 ],
             ),
+        ), patch(
+            "app.api.student_routes.generate_activities",
+            return_value=generated_activities,
         ):
             adaptive = self.client.post(
                 f"/students/{self.student_id}/contents/{self.content_id}/adaptive"
@@ -241,6 +296,28 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(adaptive.status_code, 200)
         self.assertIn("recommendation_id", adaptive.json())
         self.assertIn("status", adaptive.json())
+        self.assertEqual(adaptive.json()["assessment"]["total"], 5)
+        self.assertEqual(len(adaptive.json()["assessment"]["activities"]), 5)
+        self.assertEqual(
+            set(adaptive.json()["analysis"]),
+            {"attempts", "correct_answers", "errors", "accuracy"},
+        )
+        self.assertEqual(adaptive.json()["analysis"]["errors"], 1)
+
+        with patch(
+            "app.services.adaptive_learning_service.generate_learning_material",
+            side_effect=errors.ServerError(503, {"error": {"status": "UNAVAILABLE"}}, None),
+        ), patch(
+            "app.api.student_routes.generate_activities",
+            return_value=generated_activities,
+        ):
+            fallback = self.client.post(
+                f"/students/{self.student_id}/contents/{self.content_id}/adaptive"
+            )
+
+        self.assertEqual(fallback.status_code, 200)
+        self.assertIn("recommended_method", fallback.json())
+        self.assertIn("material_error", fallback.json())
 
         create_recommendation(
             self.student_id,

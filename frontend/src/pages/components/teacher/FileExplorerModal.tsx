@@ -82,7 +82,9 @@ export default function FileExplorerModal({ content, onClose }: FileExplorerModa
             </p>
           </div>
 
-          <button onClick={onClose}>✕</button>
+          <button type="button" onClick={onClose} aria-label="Fechar arquivos">
+            ✕
+          </button>
         </div>
 
         <div className={styles.managerContent}>
@@ -158,7 +160,13 @@ export default function FileExplorerModal({ content, onClose }: FileExplorerModa
                   <strong>Tamanho:</strong> {selectedFile.size}
                 </p>
 
-                <button type="button">📤 Exportar Arquivo</button>
+                <a
+                  href={`/api/contents/${selectedFile.id}/attachment`}
+                  download
+                  className={styles.uploadButton}
+                >
+                  📤 Baixar anexo
+                </a>
               </>
             ) : (
               <div className={styles.emptyArea}>Selecione um arquivo para visualizar.</div>

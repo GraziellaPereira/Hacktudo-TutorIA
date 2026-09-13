@@ -15,6 +15,12 @@ export interface CreateContentRequest {
 
   assessmentFocus: string[];
 
+  contextId?: string;
+
+  classroomId?: string;
+
+  subjectId?: string;
+
   file: File;
 }
 
@@ -36,6 +42,10 @@ export async function createTeacherContent(data: CreateContentRequest) {
   data.assessmentFocus.forEach((item) => {
     formData.append('assessment_focus', item);
   });
+
+  if (data.contextId) formData.append('context_id', data.contextId);
+  if (data.classroomId) formData.append('classroom_id', data.classroomId);
+  if (data.subjectId) formData.append('subject_id', data.subjectId);
 
   formData.append('file', data.file);
 

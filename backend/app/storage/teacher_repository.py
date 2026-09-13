@@ -52,3 +52,31 @@ def get_teachers():
         ).fetchall()
 
     return [dict(row) for row in rows]
+
+
+def update_teacher(
+    teacher_id: str,
+    name: str | None = None,
+    description: str | None = None,
+    email: str | None = None,
+):
+    teacher = get_teacher(teacher_id)
+    if not teacher:
+        return None
+
+    with connection_scope() as connection:
+        connection.execute(
+            """
+            UPDATE teachers
+            SET name = ?, description = ?, email = ?
+            WHERE id = ?
+            """,
+            (
+                name.strip() if name is not None else teacher["name"],
+                description if description is not None else teacher["description"],
+                email.strip() if email else None,
+                teacher_id,
+            ),
+        )
+
+    return get_teacher(teacher_id)

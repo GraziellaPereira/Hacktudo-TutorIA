@@ -10,7 +10,7 @@ export default function EditProfileModal({ teacher, onSave, onClose }: any) {
   const [description, setDescription] = useState(teacher.description);
 
   async function save() {
-    const updated = await updateProfile({
+    const updated = await updateProfile(teacher.id, {
       name,
 
       description,

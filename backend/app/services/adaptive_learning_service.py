@@ -1,3 +1,5 @@
+from google.genai import errors
+
 from app.services.recommendation_service import recommend_method
 from app.services.learning_method_service import generate_learning_material
 from app.storage.recommendation_repository import create_recommendation
@@ -42,6 +44,8 @@ def _build_state_response(
     method,
     reason,
     material=None,
+    accuracy=0,
+    analysis=None,
 ):
     response = {
         "recommendation_id": recommendation_id,
@@ -51,6 +55,13 @@ def _build_state_response(
         "recommended_method": method,
         "reason": reason,
         "material": material,
+        "accuracy": accuracy,
+        "analysis": analysis or {
+            "attempts": 0,
+            "correct_answers": 0,
+            "errors": 0,
+            "accuracy": accuracy,
+        },
     }
 
     if status == "completed":
@@ -93,6 +104,14 @@ def generate_adaptive_material(
             )
 
     status = _classify_learning_state(performance)
+    total_attempts, accuracy = _calculate_overall_performance(performance)
+    total_correct = sum(item["correct_answers"] for item in performance)
+    analysis = {
+        "attempts": total_attempts,
+        "correct_answers": total_correct,
+        "errors": total_attempts - total_correct,
+        "accuracy": accuracy,
+    }
 
     if status == "completed":
         recommendation_id = create_recommendation(
@@ -110,6 +129,8 @@ def generate_adaptive_material(
             error_profile,
             None,
             "O aluno consolidou o conteúdo com desempenho consistente.",
+            accuracy=accuracy,
+            analysis=analysis,
         )
 
     if status == "needs_review":
@@ -129,20 +150,11 @@ def generate_adaptive_material(
         focus_concepts = [item["concept"] for item in performance]
 
     method = "flashcards" if status == "mastered" else recommend_method(
-        error_profile
+        error_profile,
+        performance=performance,
     )
-
-    if status == "needs_review" and method == "flashcards":
-        method = "mind_map"
 
     student.preferred_method = method
-
-    material = generate_learning_material(
-        content_text,
-        student,
-        topic,
-        focus_concepts=focus_concepts,
-    )
 
     recommendation_id = create_recommendation(
         student.student_id,
@@ -153,7 +165,19 @@ def generate_adaptive_material(
         reason,
     )
 
-    return _build_state_response(
+    material = None
+    material_error = None
+    try:
+        material = generate_learning_material(
+            content_text,
+            student,
+            topic,
+            focus_concepts=focus_concepts,
+        )
+    except errors.ServerError:
+        material_error = "O método foi recomendado, mas a IA está temporariamente indisponível para gerar o material."
+
+    response = _build_state_response(
         recommendation_id,
         status,
         "generate_material",
@@ -161,4 +185,9 @@ def generate_adaptive_material(
         method,
         reason,
         material,
+        accuracy=accuracy,
+        analysis=analysis,
     )
+    if material_error:
+        response["material_error"] = material_error
+    return response

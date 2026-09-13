@@ -1,10 +1,12 @@
 import json
 
 from fastapi import APIRouter, HTTPException
+from google.genai import errors
 
 from app.api.schemas import StudentCreateRequest
 
 from app.model.content import Topic
+from app.model.activity import Activity
 from app.model.student import StudentContext
 
 from app.storage.student_repository import (
@@ -22,6 +24,7 @@ from app.storage.activity_repository import get_approved_activities_by_content
 
 from app.storage.content_repository import (
     get_content,
+    get_content_context,
     update_content_summary
 )
 
@@ -55,8 +58,16 @@ from app.services.learning_method_service import (
     generate_learning_material
 )
 
+from app.services.activity_service import (
+    ASSESSMENT_ACTIVITY_COUNT,
+    generate_activities,
+)
+from app.services.validator_service import validate_activity
+from app.storage.activity_repository import create_activity
+
 from app.storage.student_attempt_repository import (
-    create_attempt
+    create_attempt,
+    get_student_attempts,
 )
 
 from app.storage.performance_repository import (
@@ -66,6 +77,8 @@ from app.storage.performance_repository import (
 from app.services.adaptive_learning_service import (
     generate_adaptive_material
 )
+
+from app.services.performance_service import select_activity_batch
 
 from app.storage.performance_repository import (
     get_student_performance_by_concept
@@ -79,6 +92,59 @@ router = APIRouter(
     prefix="/students",
     tags=["Aluno"]
 )
+
+
+def _assessment_batch(activities, answered_ids=None):
+    answered_ids = answered_ids or set()
+    models = []
+    for activity in activities:
+        payload = dict(activity)
+        payload["activity_id"] = payload["id"]
+        models.append(Activity.model_validate(payload))
+
+    selected = select_activity_batch(
+        models,
+        answered_ids=answered_ids,
+        batch_size=ASSESSMENT_ACTIVITY_COUNT,
+    )
+    result = []
+    for activity in selected:
+        payload = activity.model_dump()
+        payload["id"] = payload.pop("activity_id")
+        result.append(payload)
+    return result
+
+def _generate_adaptive_batch(content, topic_data):
+    context = get_content_context(content["id"])
+    topic = Topic.model_validate(topic_data)
+    activity_set = generate_activities(context, topic)
+    batch = []
+
+    for activity in activity_set.activities[:ASSESSMENT_ACTIVITY_COUNT]:
+        validation = validate_activity(activity)
+        activity_id = create_activity(
+            topic_id=topic_data["id"],
+            topic=activity.topic,
+            learning_objective=activity.learning_objective,
+            activity_type=activity.type,
+            difficulty=activity.difficulty,
+            cognitive_skill=activity.cognitive_skill,
+            learning_dimension=activity.learning_dimension,
+            question=activity.question,
+            options=activity.options,
+            correct_answer=activity.correct_answer,
+            explanation=activity.explanation,
+            hints=activity.hints,
+            review_status="approved",
+            validation_score=validation.score,
+            validation_warnings=validation.warnings,
+        )
+        payload = activity.model_dump()
+        payload.pop("activity_id", None)
+        payload["id"] = activity_id
+        batch.append(payload)
+
+    return batch
 
 
 # ==================================================
@@ -185,10 +251,30 @@ def student_content_detail(student_id: str, content_id: str):
     if not content:
         raise HTTPException(status_code=404, detail="Conteúdo não encontrado")
 
+    approved_activities = get_approved_activities_by_content(content_id)
+    answered_ids = {
+        attempt["item_id"]
+        for attempt in get_student_attempts(student_id)
+        if attempt["item_type"] == "activity"
+    }
+    assessment_activities = _assessment_batch(approved_activities, answered_ids)
+
+    student_content = dict(content)
+    student_content.pop("original_text", None)
+    student_content.pop("attachment_path", None)
+    attachment_name = student_content.pop("attachment_name", None)
+    student_content["attachment_name"] = attachment_name
+    student_content["has_attachment"] = bool(attachment_name)
+
     return {
-        "content": content,
+        "content": student_content,
         "topics": get_content_topics(content_id),
-        "activities": get_approved_activities_by_content(content_id),
+        "activities": assessment_activities,
+        "assessment": {
+            "total": len(assessment_activities),
+            "available": len(approved_activities),
+            "selection_size": ASSESSMENT_ACTIVITY_COUNT,
+        },
     }
 
 # ==================================================
@@ -858,12 +944,49 @@ def adaptive_learning(
     )
 
 
-    return generate_adaptive_material(
+    result = generate_adaptive_material(
         student_context,
         content,
         topic,
         performance
     )
+
+    material = result.get("material")
+    save_preference(student_id, content_id, None, result["recommended_method"])
+    if material is not None:
+        material_payload = material.model_dump()
+        material_id = create_learning_material(
+            student_id,
+            content_id,
+            topics[0]["id"],
+            result["recommended_method"],
+            material_payload,
+        )
+        result["material_id"] = material_id
+        result["material"] = material_payload
+
+    approved_activities = get_approved_activities_by_content(content_id)
+    answered_ids = {
+        attempt["item_id"]
+        for attempt in get_student_attempts(student_id)
+        if attempt["item_type"] == "activity"
+    }
+    next_batch = []
+    if result["accuracy"] < 0.8:
+        try:
+            next_batch = _generate_adaptive_batch(content, topics[0])
+        except errors.ServerError:
+            result["assessment_error"] = (
+                "O método foi recomendado, mas a IA está temporariamente indisponível "
+                "para gerar o próximo lote de questões."
+            )
+    result["assessment"] = {
+        "activities": next_batch,
+        "total": len(next_batch),
+        "selection_size": ASSESSMENT_ACTIVITY_COUNT,
+        "continue": result["accuracy"] < 0.8 and bool(next_batch),
+    }
+    return result
 
 
 @router.get(

@@ -13,6 +13,7 @@ def get_student_performance_by_concept(
             SELECT
                 concept,
                 COUNT(*) AS attempts,
+                COALESCE(a.learning_dimension, 'concept') AS learning_dimension,
                 SUM(
                     CASE 
                         WHEN correct = 0 
@@ -30,9 +31,12 @@ def get_student_performance_by_concept(
 
             FROM student_activity_attempts
 
+            LEFT JOIN activities a
+                ON a.id = student_activity_attempts.item_id
+
             WHERE student_id = ?
 
-            GROUP BY concept
+            GROUP BY concept, learning_dimension
 
             ORDER BY errors DESC
 

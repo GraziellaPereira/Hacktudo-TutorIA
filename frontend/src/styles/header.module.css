@@ -1,6 +1,7 @@
 .header {
   width: 100%;
   height: 64px;
+  padding: 0 24px;
 
   display: flex;
   align-items: center;
@@ -17,58 +18,6 @@
   box-sizing: border-box;
 }
 
-/* Área dos menus */
-.nav {
-  height: 100%;
-
-  display: flex;
-  align-items: center;
-
-  gap: 30px;
-}
-
-/* Links do menu */
-.navItem {
-  height: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #b8bec7;
-
-  cursor: pointer;
-
-  transition: 0.3s;
-
-  font-size: 15px;
-}
-
-/* Hover dos botões */
-.navItem:hover {
-  color: #ff8500;
-}
-
-/* Caso esteja usando a classe item no JSX */
-.item {
-  height: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #b8bec7;
-
-  cursor: pointer;
-
-  transition: 0.3s;
-}
-
-.item:hover {
-  color: #ff8500;
-}
-
-/* Logo Portal Ensino */
 .logo {
   display: flex;
   align-items: center;
@@ -80,4 +29,50 @@
   font-weight: 700;
 
   height: 100%;
+}
+
+.logoutButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid #526979;
+  border-radius: 7px;
+  background: #18232b;
+  color: #d7e0e6;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.logoutButton:hover {
+  border-color: #f5a524;
+  background: #263944;
+  color: #f5c66b;
+  transform: translateY(-1px);
+}
+
+.logoutButton:focus-visible {
+  outline: 3px solid rgba(245, 165, 36, 0.35);
+  outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .header {
+    padding: 0 14px;
+  }
+
+  .logo {
+    font-size: 1rem;
+  }
+
+  .logoutButton {
+    padding: 8px 10px;
+  }
 }

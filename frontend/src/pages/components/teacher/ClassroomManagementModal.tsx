@@ -50,7 +50,11 @@ export default function ClassroomManagementModal({
 
     setEducationLevels(classroom.educationLevels ?? []);
 
-    setSubjects(classroom.subjects ?? []);
+    setSubjects(
+      (classroom.subjects ?? []).map((subject: any) =>
+        typeof subject === 'string' ? subject : subject.name,
+      ),
+    );
 
     setLearningObjective(classroom.learningObjective ?? '');
 
@@ -125,7 +129,6 @@ export default function ClassroomManagementModal({
       educationLevels.length === 0 ||
       subjects.length === 0 ||
       !learningObjective ||
-      !questionFocus ||
       studentsCount <= 0
     ) {
       alert('Preencha todos os campos obrigatórios.');
@@ -291,7 +294,7 @@ export default function ClassroomManagementModal({
                   onChange={(e) => setLearningObjective(e.target.value)}
                 />
 
-                <label>Foco das questões *</label>
+                <label>Foco das questões</label>
 
                 <textarea
                   value={questionFocus}

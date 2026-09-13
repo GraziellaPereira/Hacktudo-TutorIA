@@ -44,15 +44,15 @@ export async function getTeacher(teacherId: string) {
 
 // Atualizar professor
 
-export async function updateProfile(data: any) {
-  const response = await fetch('/api/profile', {
+export async function updateProfile(teacherId: string, data: any) {
+  const response = await fetch(`/api/profile?teacherId=${encodeURIComponent(teacherId)}`, {
     method: 'PUT',
 
     headers: {
       'Content-Type': 'application/json',
     },
 
-    body: JSON.stringify(data),
+    body: JSON.stringify({ ...data, teacherId }),
   });
 
   if (!response.ok) {

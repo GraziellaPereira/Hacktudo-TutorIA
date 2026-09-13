@@ -186,7 +186,7 @@ def update_review_status(
 def _convert_activity(row):
 
     activity = dict(row)
-    activity["activity_id"] = activity["id"]
+    activity["id"] = activity["id"]
 
     activity["options"] = json.loads(
         activity["options"]

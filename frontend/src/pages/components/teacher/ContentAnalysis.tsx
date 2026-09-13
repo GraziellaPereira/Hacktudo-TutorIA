@@ -17,10 +17,14 @@ export interface ContentAnalysisData {
   learning_objectives: string[];
   concepts: string[];
   activities?: Array<{
-    activity_id: string;
+    id: string;
+    topic: string;
+    learning_objective: string;
     question: string;
     options: string[];
     correct_answer: string;
+    explanation: string;
+    hints: string[];
     review_status: string;
   }>;
 }
@@ -38,6 +42,17 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [editing, setEditing] = useState(false);
   const [draftQuestion, setDraftQuestion] = useState('');
+  const [draftTopic, setDraftTopic] = useState('');
+  const [draftLearningObjective, setDraftLearningObjective] = useState('');
+  const [draftOptions, setDraftOptions] = useState<string[]>([]);
+  const [draftCorrectAnswer, setDraftCorrectAnswer] = useState('');
+  const [draftExplanation, setDraftExplanation] = useState('');
+  const [draftHints, setDraftHints] = useState<string[]>([]);
+  const [editingContent, setEditingContent] = useState(false);
+  const [draftTitle, setDraftTitle] = useState(analysis.title);
+  const [draftSummary, setDraftSummary] = useState(analysis.summary);
+  const [draftTopics, setDraftTopics] = useState(analysis.topics);
+  const [savingContent, setSavingContent] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   async function handleApprove() {
@@ -51,15 +66,21 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
 
   async function reviewActivity(reviewStatus: string, question?: string) {
     if (!selectedActivity) return;
-    setBusyId(selectedActivity.activity_id);
+    setBusyId(selectedActivity.id);
     try {
-      const response = await fetch(`/api/activities/${selectedActivity.activity_id}/review`, {
+      const response = await fetch(`/api/activities/${selectedActivity.id}/review`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           review_status: reviewStatus,
           teacher_modified: Boolean(question),
           question,
+          topic: draftTopic,
+          learning_objective: draftLearningObjective,
+          options: draftOptions,
+          correct_answer: draftCorrectAnswer,
+          explanation: draftExplanation,
+          hints: draftHints,
         }),
       });
       if (!response.ok) throw new Error('Não foi possível atualizar a questão.');
@@ -73,9 +94,9 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
 
   async function regenerateActivity() {
     if (!selectedActivity) return;
-    setBusyId(selectedActivity.activity_id);
+    setBusyId(selectedActivity.id);
     try {
-      const response = await fetch(`/api/activities/${selectedActivity.activity_id}/regenerate`, {
+      const response = await fetch(`/api/activities/${selectedActivity.id}/regenerate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contentId: analysis.content_id }),
@@ -88,10 +109,52 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
     }
   }
 
+  function openContentEditor() {
+    setDraftTitle(analysis.title);
+    setDraftSummary(analysis.summary);
+    setDraftTopics(analysis.topics);
+    setEditingContent(true);
+  }
+
+  async function saveContent() {
+    if (!draftTitle.trim()) return;
+
+    setSavingContent(true);
+
+    try {
+      const response = await fetch(`/api/contents/${analysis.content_id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: draftTitle,
+          summary: draftSummary,
+          topics: draftTopics,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail ?? data.message ?? 'Não foi possível editar o conteúdo.');
+      }
+
+      setEditingContent(false);
+      await onRefresh();
+    } finally {
+      setSavingContent(false);
+    }
+  }
+
   function openActivity(activity: Activity) {
     setSelectedActivity(activity);
     setEditing(false);
+    setDraftTopic(activity.topic);
+    setDraftLearningObjective(activity.learning_objective);
     setDraftQuestion(activity.question);
+    setDraftOptions([...activity.options]);
+    setDraftCorrectAnswer(activity.correct_answer);
+    setDraftExplanation(activity.explanation);
+    setDraftHints([...activity.hints]);
   }
 
   return (
@@ -114,16 +177,97 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
 
       <div className={styles.section}>
         <h2>Resumo</h2>
-        <p>{analysis.summary || 'Resumo não disponível.'}</p>
+
+        {editingContent ? (
+          <textarea
+            className={styles.contentEditor}
+            value={draftSummary}
+            onChange={(event) => setDraftSummary(event.target.value)}
+            aria-label="Resumo do conteúdo"
+          />
+        ) : (
+          <p>{analysis.summary || 'Resumo não disponível.'}</p>
+        )}
       </div>
 
       <div className={styles.section}>
         <h2>Tópicos encontrados</h2>
         <div className={styles.topicList}>
-          {analysis.topics.map((topic) => (
+          {(editingContent ? draftTopics : analysis.topics).map((topic, topicIndex) => (
             <article className={styles.topic} key={topic.id}>
-              <h3>{topic.name}</h3>
-              <p>{topic.description}</p>
+              {editingContent ? (
+                <>
+                  <input
+                    className={styles.contentTitleEditor}
+                    value={topic.name}
+                    onChange={(event) =>
+                      setDraftTopics((topics) =>
+                        topics.map((item, index) =>
+                          index === topicIndex ? { ...item, name: event.target.value } : item,
+                        ),
+                      )
+                    }
+                  />
+                  <textarea
+                    className={styles.contentEditor}
+                    value={topic.description}
+                    onChange={(event) =>
+                      setDraftTopics((topics) =>
+                        topics.map((item, index) =>
+                          index === topicIndex
+                            ? { ...item, description: event.target.value }
+                            : item,
+                        ),
+                      )
+                    }
+                  />
+                  <input
+                    className={styles.contentTitleEditor}
+                    value={topic.learning_objectives.join(', ')}
+                    onChange={(event) =>
+                      setDraftTopics((topics) =>
+                        topics.map((item, index) =>
+                          index === topicIndex
+                            ? {
+                                ...item,
+                                learning_objectives: event.target.value
+                                  .split(',')
+                                  .map((value) => value.trim())
+                                  .filter(Boolean),
+                              }
+                            : item,
+                        ),
+                      )
+                    }
+                    aria-label={`Objetivos de ${topic.name}`}
+                  />
+                  <input
+                    className={styles.contentTitleEditor}
+                    value={topic.concepts.join(', ')}
+                    onChange={(event) =>
+                      setDraftTopics((topics) =>
+                        topics.map((item, index) =>
+                          index === topicIndex
+                            ? {
+                                ...item,
+                                concepts: event.target.value
+                                  .split(',')
+                                  .map((value) => value.trim())
+                                  .filter(Boolean),
+                              }
+                            : item,
+                        ),
+                      )
+                    }
+                    aria-label={`Conceitos de ${topic.name}`}
+                  />
+                </>
+              ) : (
+                <>
+                  <h3>{topic.name}</h3>
+                  <p>{topic.description}</p>
+                </>
+              )}
             </article>
           ))}
         </div>
@@ -133,16 +277,8 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
         <div className={styles.section}>
           <h2>Objetivos de aprendizagem</h2>
           <ul>
-            {analysis.learning_objectives.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-        <div className={styles.section}>
-          <h2>Conceitos</h2>
-          <ul>
-            {analysis.concepts.map((item) => (
-              <li key={item}>{item}</li>
+            {analysis.learning_objectives.map((objective) => (
+              <li key={objective}>{objective}</li>
             ))}
           </ul>
         </div>
@@ -158,7 +294,7 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
             {analysis.activities.map((activity, index) => (
               <article
                 className={styles.activityCard}
-                key={activity.activity_id}
+                key={activity.id}
                 role="button"
                 tabIndex={0}
                 onClick={() => openActivity(activity)}
@@ -192,11 +328,69 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
               </button>
             </div>
             {editing ? (
-              <textarea
-                className={styles.questionEditor}
-                value={draftQuestion}
-                onChange={(event) => setDraftQuestion(event.target.value)}
-              />
+              <>
+                <input
+                  className={styles.contentTitleEditor}
+                  value={draftTopic}
+                  onChange={(event) => setDraftTopic(event.target.value)}
+                  aria-label="Tópico da questão"
+                />
+                <input
+                  className={styles.contentTitleEditor}
+                  value={draftLearningObjective}
+                  onChange={(event) => setDraftLearningObjective(event.target.value)}
+                  aria-label="Objetivo da questão"
+                />
+                <textarea
+                  className={styles.questionEditor}
+                  value={draftQuestion}
+                  onChange={(event) => setDraftQuestion(event.target.value)}
+                  aria-label="Pergunta"
+                />
+                <h3>Alternativas</h3>
+                {draftOptions.map((option, index) => (
+                  <input
+                    key={index}
+                    className={styles.contentTitleEditor}
+                    value={option}
+                    onChange={(event) =>
+                      setDraftOptions((options) =>
+                        options.map((item, optionIndex) =>
+                          optionIndex === index ? event.target.value : item,
+                        ),
+                      )
+                    }
+                    aria-label={`Alternativa ${index + 1}`}
+                  />
+                ))}
+                <input
+                  className={styles.contentTitleEditor}
+                  value={draftCorrectAnswer}
+                  onChange={(event) => setDraftCorrectAnswer(event.target.value)}
+                  aria-label="Resposta correta"
+                />
+                <textarea
+                  className={styles.contentEditor}
+                  value={draftExplanation}
+                  onChange={(event) => setDraftExplanation(event.target.value)}
+                  aria-label="Explicação"
+                />
+                {draftHints.map((hint, index) => (
+                  <textarea
+                    key={index}
+                    className={styles.contentEditor}
+                    value={hint}
+                    onChange={(event) =>
+                      setDraftHints((hints) =>
+                        hints.map((item, hintIndex) =>
+                          hintIndex === index ? event.target.value : item,
+                        ),
+                      )
+                    }
+                    aria-label={`Dica ${index + 1}`}
+                  />
+                ))}
+              </>
             ) : (
               <p className={styles.modalQuestion}>{selectedActivity.question}</p>
             )}
@@ -206,12 +400,30 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
                 <li key={option}>{option}</li>
               ))}
             </ol>
+            {!editing && (
+              <>
+                <p>
+                  <strong>Resposta correta:</strong> {selectedActivity.correct_answer}
+                </p>
+                <p>
+                  <strong>Explicação:</strong> {selectedActivity.explanation}
+                </p>
+                <div>
+                  <strong>Dicas:</strong>
+                  <ul>
+                    {selectedActivity.hints.map((hint, index) => (
+                      <li key={`${index}-${hint}`}>{hint}</li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
             <span className={styles.status}>{selectedActivity.review_status}</span>
             <div className={styles.modalActions}>
               {editing ? (
                 <button
                   type="button"
-                  className={styles.approveButton}
+                  className={`${styles.modalButton} ${styles.modalSaveButton}`}
                   disabled={busyId !== null}
                   onClick={() => reviewActivity('edited', draftQuestion)}
                 >
@@ -220,7 +432,7 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
               ) : (
                 <button
                   type="button"
-                  className={styles.editButton}
+                  className={`${styles.modalButton} ${styles.modalEditButton}`}
                   onClick={() => setEditing(true)}
                 >
                   Editar
@@ -229,7 +441,7 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
               {selectedActivity.review_status !== 'approved' && (
                 <button
                   type="button"
-                  className={styles.approveButton}
+                  className={`${styles.modalButton} ${styles.modalApproveButton}`}
                   disabled={busyId !== null}
                   onClick={() => reviewActivity('approved')}
                 >
@@ -238,7 +450,7 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
               )}
               <button
                 type="button"
-                className={styles.editButton}
+                className={`${styles.modalButton} ${styles.modalRegenerateButton}`}
                 disabled={busyId !== null}
                 onClick={regenerateActivity}
               >
@@ -250,9 +462,36 @@ export default function ContentAnalysis({ analysis, onApprove, onRefresh }: Cont
       )}
 
       <footer className={styles.actions}>
-        <button type="button" className={styles.editButton}>
-          Editar
-        </button>
+        {editingContent ? (
+          <>
+            <input
+              className={styles.contentTitleEditor}
+              value={draftTitle}
+              onChange={(event) => setDraftTitle(event.target.value)}
+              aria-label="Título do conteúdo"
+            />
+            <button
+              type="button"
+              className={styles.editButton}
+              onClick={() => setEditingContent(false)}
+              disabled={savingContent}
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              className={styles.approveButton}
+              onClick={saveContent}
+              disabled={savingContent || !draftTitle.trim()}
+            >
+              {savingContent ? 'Salvando...' : 'Salvar edição'}
+            </button>
+          </>
+        ) : (
+          <button type="button" className={styles.editButton} onClick={openContentEditor}>
+            Editar
+          </button>
+        )}
         <button
           type="button"
           className={styles.approveButton}

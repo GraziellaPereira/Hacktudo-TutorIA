@@ -7,11 +7,13 @@
 
   justify-content: center;
 
+  padding: 24px;
+
   background: #0f141a;
 }
 
 .card {
-  width: 400px;
+  width: min(100%, 440px);
 
   background: #151b22;
 
@@ -19,17 +21,29 @@
 
   border-radius: 18px;
 
-  padding: 40px;
+  padding: 42px;
 
   text-align: center;
 
   color: white;
 }
 
+.eyebrow {
+  color: #ff9233;
+
+  font-size: 12px;
+
+  font-weight: bold;
+
+  letter-spacing: 1.4px;
+
+  text-transform: uppercase;
+}
+
 .card h1 {
   font-size: 32px;
 
-  margin-bottom: 15px;
+  margin: 12px 0 15px;
 }
 
 .card p {
@@ -38,6 +52,116 @@
   line-height: 1.5;
 
   margin-bottom: 30px;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin: 0 0 26px;
+  padding: 4px;
+  background: #10151b;
+  border: 1px solid #27313b;
+  border-radius: 12px;
+}
+
+.tab,
+.activeTab {
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 12px;
+  color: #aeb8c4;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.activeTab {
+  color: #151b22;
+  background: #ff9233;
+}
+
+.tab:hover {
+  color: white;
+  background: #202a34;
+}
+
+.form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+
+  text-align: left;
+}
+
+.form label {
+  color: #d9e0e7;
+
+  font-size: 14px;
+
+  font-weight: bold;
+}
+
+.form input {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  background: #10151b;
+
+  border: 1px solid #27313b;
+
+  border-radius: 10px;
+
+  color: white;
+
+  font-size: 16px;
+
+  padding: 14px;
+}
+
+.form select {
+  width: 100%;
+  box-sizing: border-box;
+  background: #10151b;
+  border: 1px solid #27313b;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  padding: 14px;
+}
+
+.form input:focus {
+  border-color: #ff7a00;
+
+  outline: 2px solid rgba(255, 122, 0, 0.2);
+}
+
+.form select:focus {
+  border-color: #ff7a00;
+  outline: 2px solid rgba(255, 122, 0, 0.2);
+}
+
+.form select:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.form input:disabled {
+  cursor: wait;
+
+  opacity: 0.7;
+}
+
+.error {
+  color: #ff9b9b !important;
+
+  font-size: 13px;
+
+  margin: 2px 0 0 !important;
 }
 
 .button {
@@ -60,4 +184,36 @@
 
 .button:hover {
   background: #ff9233;
+}
+
+.button:disabled {
+  cursor: wait;
+
+  opacity: 0.7;
+}
+
+.registerPrompt {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  margin-top: 24px;
+
+  color: #aeb8c4;
+
+  font-size: 14px;
+}
+
+.registerPrompt a {
+  color: #ff9233;
+
+  font-weight: bold;
+
+  text-decoration: none;
+}
+
+.registerPrompt a:hover {
+  text-decoration: underline;
 }

@@ -464,6 +464,128 @@
   background: #ff8c26;
 }
 
+.managerRight .filePicker {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 8px 12px;
+
+  border: 1px dashed #536170;
+
+  border-radius: 10px;
+
+  background: #202832;
+
+  color: #b9c4cf;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.filePicker:hover {
+  border-color: #ff7a00;
+
+  background: #252f3a;
+}
+
+.filePickerButton {
+  flex: 0 0 auto;
+
+  padding: 8px 12px;
+
+  border-radius: 7px;
+
+  background: #ff7a00;
+
+  color: #171b20;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.fileName {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-size: 14px;
+}
+
+.managerRight .fileInput {
+  position: absolute;
+
+  width: 1px;
+
+  height: 1px;
+
+  overflow: hidden;
+
+  clip: rect(0 0 0 0);
+
+  white-space: nowrap;
+
+  clip-path: inset(50%);
+}
+
+.managerRight .fileInput:focus-visible + .filePicker {
+  outline: 2px solid #ffd19a;
+
+  outline-offset: 2px;
+}
+
+.saveContentButton {
+  margin-top: 25px;
+
+  width: 100%;
+
+  padding: 13px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background: #ff7a00;
+
+  color: white;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.saveContentButton:hover {
+  background: #ff8c26;
+
+  transform: translateY(-1px);
+}
+
+.saveContentButton:disabled {
+  cursor: wait;
+
+  opacity: 0.65;
+
+  transform: none;
+}
+
 .emptyArea {
   height: 100%;
 

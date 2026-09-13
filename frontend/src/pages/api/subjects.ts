@@ -1,163 +1,59 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { database } from '../../data/database';
+const API_URL = process.env.NEXT_PUBLIC_API_URL?.trim() || 'http://127.0.0.1:8000';
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  /*
-    LISTAR MATÉRIAS
-  */
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const body = req.body && typeof req.body === 'object' ? req.body : {};
+  const teacherId = typeof req.query.teacherId === 'string' ? req.query.teacherId : body.teacherId;
+  const contextId = body.contextId;
 
-  if (req.method === 'GET') {
-    const subjects: any[] = [];
+  if (typeof teacherId !== 'string' || !teacherId.trim()) {
+    return res.status(400).json({ message: 'Professor é obrigatório' });
+  }
 
-    database.teachers.forEach((teacher: any) => {
-      (teacher.contexts ?? []).forEach((context: any) => {
-        (context.subjects ?? []).forEach((subject: any) => {
-          subjects.push(subject);
+  try {
+    if (req.method === 'GET') {
+      const response = await fetch(`${API_URL}/teachers/${teacherId}/subjects`);
+      return res.status(response.status).json(await response.json());
+    }
+
+    if (req.method === 'POST') {
+      if (typeof contextId !== 'string' || !contextId.trim()) {
+        return res.status(400).json({ message: 'Contexto é obrigatório' });
+      }
+
+      const response = await fetch(
+        `${API_URL}/teachers/${teacherId}/contexts/${contextId}/subjects`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      );
+      return res.status(response.status).json(await response.json());
+    }
+
+    if (req.method === 'PUT') {
+      if (typeof contextId !== 'string' || typeof body.id !== 'string') {
+        return res.status(400).json({
+          message: 'Professor, contexto e matéria são obrigatórios',
         });
-      });
-    });
-
-    return res.status(200).json(subjects);
-  }
-
-  /*
-    CRIAR MATÉRIA
-  */
-
-  if (req.method === 'POST') {
-    const teacher = database.teachers.find(
-      (item: any) => Number(item.id) === Number(req.body.teacherId),
-    );
-
-    if (!teacher) {
-      return res.status(404).json({
-        message: 'Professor não encontrado',
-      });
-    }
-
-    const context = teacher.contexts?.find(
-      (item: any) => Number(item.id) === Number(req.body.contextId),
-    );
-
-    if (!context) {
-      return res.status(404).json({
-        message: 'Contexto não encontrado',
-      });
-    }
-
-    const newSubject = {
-      id: Date.now(),
-
-      contextId: context.id,
-
-      name: req.body.name,
-
-      description: req.body.description,
-
-      importanceLevel: req.body.importanceLevel ?? 'Medium',
-
-      classrooms: req.body.classrooms ?? [],
-
-      files: {
-        pdf: 0,
-
-        videos: 0,
-
-        audios: 0,
-
-        powerpoint: 0,
-      },
-
-      activities: [],
-    };
-
-    context.subjects = context.subjects ?? [];
-
-    context.subjects.push(newSubject);
-
-    console.log('Matéria criada:', newSubject);
-
-    return res.status(201).json(newSubject);
-  }
-
-  /*
-    ATUALIZAR MATÉRIA
-  */
-
-  if (req.method === 'PUT') {
-    const subjectId = Number(req.body.id);
-
-    console.log('Atualizando matéria:', subjectId);
-
-    let subject: any = null;
-
-    let subjectContext: any = null;
-
-    /*
-      Procurar matéria dentro dos contextos
-    */
-
-    for (const teacher of database.teachers) {
-      for (const context of teacher.contexts ?? []) {
-        const found = (context.subjects ?? []).find((item: any) => Number(item.id) === subjectId);
-
-        if (found) {
-          subject = found;
-
-          subjectContext = context;
-
-          break;
-        }
       }
 
-      if (subject) {
-        break;
-      }
+      const response = await fetch(
+        `${API_URL}/teachers/${teacherId}/contexts/${contextId}/subjects/${body.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      );
+      return res.status(response.status).json(await response.json());
     }
 
-    if (!subject) {
-      console.log('Matéria não encontrada:', subjectId);
-
-      console.log(JSON.stringify(database.teachers, null, 2));
-
-      return res.status(404).json({
-        message: 'Matéria não encontrada',
-      });
-    }
-
-    /*
-      Atualiza campos da matéria
-    */
-
-    subject.classrooms = req.body.classrooms ?? subject.classrooms ?? [];
-
-    subject.files = subject.files ?? {
-      pdf: 0,
-
-      videos: 0,
-
-      audios: 0,
-
-      powerpoint: 0,
-    };
-
-    /*
-      Regrava dentro do contexto
-    */
-
-    const index = subjectContext.subjects.findIndex((item: any) => Number(item.id) === subjectId);
-
-    if (index !== -1) {
-      subjectContext.subjects[index] = subject;
-    }
-
-    console.log('Matéria salva:', subject);
-
-    return res.status(200).json(subject);
+    return res.status(405).json({ message: 'Método não permitido' });
+  } catch (error) {
+    console.error('Erro ao comunicar com as matérias:', error);
+    return res.status(502).json({ message: 'Não foi possível comunicar com o backend' });
   }
-
-  return res.status(405).json({
-    message: 'Método não permitido',
-  });
 }

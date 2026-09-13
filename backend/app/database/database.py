@@ -1,4 +1,6 @@
 import sqlite3
+import json
+import uuid
 from pathlib import Path
 from typing import Iterator
 from contextlib import contextmanager
@@ -28,6 +30,39 @@ CREATE TABLE IF NOT EXISTS contexts (
     subjects TEXT NOT NULL DEFAULT '[]',
     created_at TEXT NOT NULL,
     FOREIGN KEY (teacher_id) REFERENCES teachers(id)
+);
+
+CREATE TABLE IF NOT EXISTS classrooms (
+    id TEXT PRIMARY KEY,
+    context_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    year TEXT NOT NULL DEFAULT '',
+    education_levels TEXT NOT NULL DEFAULT '[]',
+    learning_objective TEXT NOT NULL DEFAULT '',
+    question_focus TEXT NOT NULL DEFAULT '',
+    students_count INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (context_id) REFERENCES contexts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS subjects (
+    id TEXT PRIMARY KEY,
+    context_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    importance_level TEXT NOT NULL DEFAULT 'Medium',
+    files TEXT NOT NULL DEFAULT '{}',
+    activities TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (context_id) REFERENCES contexts(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS classroom_subjects (
+    classroom_id TEXT NOT NULL,
+    subject_id TEXT NOT NULL,
+    PRIMARY KEY (classroom_id, subject_id),
+    FOREIGN KEY (classroom_id) REFERENCES classrooms(id) ON DELETE CASCADE,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS students (
@@ -232,6 +267,8 @@ CREATE TABLE IF NOT EXISTS student_recommendations (
 
 CONTENT_CONTEXT_COLUMNS = {
     "summary": "TEXT",
+    "attachment_path": "TEXT",
+    "attachment_name": "TEXT",
     "review_status": "TEXT NOT NULL DEFAULT 'pending'",
     "subject": "TEXT NOT NULL DEFAULT ''",
     "education_level": "TEXT NOT NULL DEFAULT ''",
@@ -239,6 +276,9 @@ CONTENT_CONTEXT_COLUMNS = {
     "target_audience": "TEXT NOT NULL DEFAULT ''",
     "learning_goal": "TEXT NOT NULL DEFAULT ''",
     "assessment_focus": "TEXT NOT NULL DEFAULT '[]'",
+        "context_id": "TEXT",
+        "classroom_id": "TEXT",
+        "subject_id": "TEXT",
 }
 
 CONTEXT_COLUMNS = {
@@ -386,7 +426,116 @@ def initialize_database() -> None:
             """
         )
 
+        _migrate_legacy_contexts(connection)
+
         connection.commit()
+
+
+def _migrate_legacy_contexts(connection: sqlite3.Connection) -> None:
+    contexts = connection.execute(
+        "SELECT id, classrooms, subjects FROM contexts"
+    ).fetchall()
+
+    for context in contexts:
+        existing = connection.execute(
+            "SELECT 1 FROM classrooms WHERE context_id = ? LIMIT 1",
+            (context[0],),
+        ).fetchone()
+        if existing:
+            continue
+
+        classrooms = json.loads(context[1] or "[]")
+        subjects = json.loads(context[2] or "[]")
+        subject_ids = {}
+
+        for raw_subject in subjects:
+            subject = _normalize_legacy_subject(raw_subject)
+            subject_id = str(subject.get("id") or uuid.uuid4())
+            subject_ids[subject_id] = subject
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO subjects
+                (id, context_id, name, description, importance_level, files, activities, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                """,
+                (
+                    subject_id,
+                    context[0],
+                    subject.get("name", ""),
+                    subject.get("description", ""),
+                    subject.get("importanceLevel", "Medium"),
+                    json.dumps(subject.get("files", {}), ensure_ascii=False),
+                    json.dumps(subject.get("activities", []), ensure_ascii=False),
+                ),
+            )
+
+        for classroom in classrooms:
+            classroom_id = str(classroom.get("id") or uuid.uuid4())
+            connection.execute(
+                """
+                INSERT OR IGNORE INTO classrooms
+                (id, context_id, name, year, education_levels, learning_objective, question_focus, students_count, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                """,
+                (
+                    classroom_id,
+                    context[0],
+                    classroom.get("name", ""),
+                    str(classroom.get("year", "")),
+                    json.dumps(classroom.get("educationLevels", []), ensure_ascii=False),
+                    classroom.get("learningObjective", ""),
+                    classroom.get("questionFocus", ""),
+                    int(classroom.get("studentsCount", 0) or 0),
+                ),
+            )
+            for raw_subject in classroom.get("subjects", []):
+                subject = _normalize_legacy_subject(raw_subject)
+                subject_id = str(subject.get("id") or uuid.uuid4())
+                if subject_id not in subject_ids:
+                    subject_ids[subject_id] = subject
+                    connection.execute(
+                        """
+                        INSERT OR IGNORE INTO subjects
+                        (id, context_id, name, description, importance_level, files, activities, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                        """,
+                        (
+                            subject_id,
+                            context[0],
+                            subject.get("name", ""),
+                            subject.get("description", ""),
+                            subject.get("importanceLevel", "Medium"),
+                            json.dumps(subject.get("files", {}), ensure_ascii=False),
+                            json.dumps(subject.get("activities", []), ensure_ascii=False),
+                        ),
+                    )
+                connection.execute(
+                    """
+                    INSERT OR IGNORE INTO classroom_subjects (classroom_id, subject_id)
+                    VALUES (?, ?)
+                    """,
+                    (classroom_id, subject_id),
+                )
+
+
+def _normalize_legacy_subject(subject) -> dict:
+    if isinstance(subject, dict):
+        return subject
+    if isinstance(subject, str):
+        return {
+            "name": subject,
+            "description": "",
+            "importanceLevel": "Medium",
+            "files": {},
+            "activities": [],
+        }
+    return {
+        "name": "",
+        "description": "",
+        "importanceLevel": "Medium",
+        "files": {},
+        "activities": [],
+    }
 
 
 @contextmanager

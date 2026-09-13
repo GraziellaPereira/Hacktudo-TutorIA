@@ -22,7 +22,8 @@ def classify_learning_problem(concept: str):
 
 def recommend_method(
     error_profile,
-    used_methods=None
+    used_methods=None,
+    performance=None,
 ):
 
     used_methods = used_methods or set()
@@ -55,9 +56,13 @@ def recommend_method(
 
 
     for concept, _ in ordered_errors:
-
-        problem_type = classify_learning_problem(
-            concept
+        problem_type = next(
+            (
+                item.get("learning_dimension")
+                for item in performance or []
+                if item.get("concept") == concept
+            ),
+            classify_learning_problem(concept),
         )
 
 

@@ -57,6 +57,13 @@ export default function ContentAnalysisPage() {
 
   return (
     <main className={styles.page}>
+      <button
+        type="button"
+        className={styles.backToTeacherButton}
+        onClick={() => router.push('/teacher')}
+      >
+        ← Voltar para área do professor
+      </button>
       <ContentAnalysis analysis={analysis} onApprove={approveContent} onRefresh={refreshAnalysis} />
     </main>
   );

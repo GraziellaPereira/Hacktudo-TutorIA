@@ -41,7 +41,7 @@
 
   line-height: 1.5;
 
-  margin-bottom: 20px;
+  margin: 0;
 }
 
 /* Blocos de informação */
@@ -53,7 +53,7 @@
 
   padding: 15px;
 
-  margin-top: 15px;
+  margin-top: 30px;
 
   border: 1px solid #222b35;
 }
@@ -72,22 +72,107 @@
 
 /* Turmas */
 
-.classroom {
+.classroomCard {
   display: flex;
-
-  justify-content: space-between;
 
   align-items: center;
 
-  padding: 10px 0;
+  gap: 12px;
 
-  border-bottom: 1px solid #222b35;
+  width: 100%;
+
+  padding: 12px 14px;
+
+  border: 1px solid #27313b;
+
+  border-radius: 10px;
+
+  background: #151b22;
 
   color: #d5d9df;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
-.classroom:last-child {
-  border-bottom: none;
+.classroomCard + .classroomCard {
+  margin-top: 8px;
+}
+
+.classroomCard:hover {
+  border-color: #ff8500;
+
+  background: #1c242d;
+
+  transform: translateY(-1px);
+}
+
+.classroomCard:focus-visible {
+  outline: 2px solid #ffd19a;
+
+  outline-offset: 2px;
+}
+
+.classroomCardIcon {
+  display: grid;
+
+  flex: 0 0 34px;
+
+  width: 34px;
+
+  height: 34px;
+
+  place-items: center;
+
+  border-radius: 8px;
+
+  background: rgba(255, 133, 0, 0.12);
+
+  font-size: 17px;
+}
+
+.classroomCardContent {
+  display: flex;
+
+  min-width: 0;
+
+  flex: 1;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.classroomCardContent strong {
+  overflow: hidden;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.classroomCardContent span {
+  color: #8f9aa6;
+
+  font-size: 12px;
+}
+
+.classroomCardArrow {
+  color: #ff9d3d;
+
+  font-size: 20px;
+
+  line-height: 1;
 }
 
 /* Total alunos */
@@ -146,15 +231,4 @@
   background: #ff8500;
 
   color: #111;
-}
-
-.classroomHeader {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.classroomHeader strong {
-  font-size: 16px;
-  font-weight: 600;
 }
