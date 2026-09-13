@@ -95,6 +95,9 @@ def create_content(
 
 
 def update_content_summary(content_id: str, summary: str) -> None:
+    if isinstance(summary, dict):
+        summary = json.dumps(summary, ensure_ascii=False)
+
     with connection_scope() as connection:
         connection.execute(
             "UPDATE contents SET summary = ? WHERE id = ?",
